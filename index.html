@@ -35,11 +35,11 @@ td.op-cell .ruolo{font-size:11px;font-weight:400;color:#888}
 td.shift-cell{padding:3px;text-align:center;min-width:52px}
 .shift-badge{display:inline-flex;align-items:center;justify-content:center;padding:3px 5px;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;min-width:40px;user-select:none;position:relative}
 .shift-badge:hover{opacity:.8}
-.s-M{background:#B5D4F4;color:#0C447C}
-.s-P{background:#C0DD97;color:#27500A}
+.s-G{background:#B5D4F4;color:#0C447C}
+.s-S{background:#FAC775;color:#633806}
 .s-N{background:#CECBF6;color:#3C3489}
 .s-R{background:#D3D1C7;color:#444}
-.s-F{background:#F5C4B3;color:#712B13}
+.s-FE{background:#F5C4B3;color:#712B13}
 .s-OFF{background:transparent;color:#aaa;border:1px dashed #ddd}
 .ot-dot{position:absolute;top:1px;right:1px;width:5px;height:5px;border-radius:50%;background:#BA7517}
 .note-dot{position:absolute;top:1px;left:1px;width:5px;height:5px;border-radius:50%;background:#185FA5}
@@ -65,6 +65,7 @@ td.shift-cell{padding:3px;text-align:center;min-width:52px}
 .month-day.today{border-color:#185FA5}
 .day-num{font-size:10px;color:#888;margin-bottom:2px}
 .month-shift{font-size:9px;font-weight:600;border-radius:2px;padding:1px 3px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell-note{font-size:10px;color:#185FA5;margin-top:2px;text-align:left;padding:0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;display:block}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#185FA5;color:#fff;padding:9px 22px;border-radius:8px;font-size:13px;z-index:9999;pointer-events:none;opacity:0;transition:opacity .3s;white-space:nowrap}
 .toast.show{opacity:1}
 .container{position:relative}
@@ -90,12 +91,11 @@ td.shift-cell{padding:3px;text-align:center;min-width:52px}
   </div>
 
   <div class="legend">
-    <div class="leg-item"><div class="leg-dot" style="background:#B5D4F4"></div>Mattina (M)</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#C0DD97"></div>Pomeriggio (P)</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#B5D4F4"></div>Giornata (G)</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#FAC775"></div>Straordinario (S)</div>
     <div class="leg-item"><div class="leg-dot" style="background:#CECBF6"></div>Notte (N)</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#F5C4B3"></div>Ferie (F)</div>
     <div class="leg-item"><div class="leg-dot" style="background:#D3D1C7"></div>Riposo (R)</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#FAC775;width:6px;height:6px;border-radius:50%"></div>Straord.</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#F5C4B3"></div>Ferie (FE)</div>
     <div class="leg-item"><div class="leg-dot" style="background:#B5D4F4;width:6px;height:6px;border-radius:50%"></div>Nota</div>
   </div>
 
@@ -125,11 +125,11 @@ td.shift-cell{padding:3px;text-align:center;min-width:52px}
 <div class="toast" id="toast"></div>
 
 <script>
-const SHIFTS=['M','P','N','R','F','OFF'];
-const SHIFT_LABELS={M:'Mattina',P:'Pomeriggio',N:'Notte',R:'Riposo',F:'Ferie',OFF:'Non assegnato'};
-const SHIFT_BG={M:'#B5D4F4',P:'#C0DD97',N:'#CECBF6',R:'#D3D1C7',F:'#F5C4B3',OFF:'transparent'};
-const SHIFT_FG={M:'#0C447C',P:'#27500A',N:'#3C3489',R:'#444',F:'#712B13',OFF:'#aaa'};
-const SHIFT_CSS={M:'s-M',P:'s-P',N:'s-N',R:'s-R',F:'s-F',OFF:'s-OFF'};
+const SHIFTS=['G','S','N','R','FE','OFF'];
+const SHIFT_LABELS={G:'Giornata',S:'Straordinario',N:'Notte',R:'Riposo',FE:'Ferie',OFF:'Non assegnato'};
+const SHIFT_BG={G:'#B5D4F4',S:'#FAC775',N:'#CECBF6',R:'#D3D1C7',FE:'#F5C4B3',OFF:'transparent'};
+const SHIFT_FG={G:'#0C447C',S:'#633806',N:'#3C3489',R:'#444',FE:'#712B13',OFF:'#aaa'};
+const SHIFT_CSS={G:'s-G',S:'s-S',N:'s-N',R:'s-R',FE:'s-FE',OFF:'s-OFF'};
 const DAYS_IT=['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
 const MONTHS_IT=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 
@@ -197,22 +197,22 @@ function render(){
   document.getElementById('nav-label').textContent=fmtDate(days[0])+' — '+fmtDate(days[6])+' '+days[0].getFullYear();
   document.getElementById('table-head').innerHTML='<tr><th class="op-col">Operaio</th>'+
     days.map((d,i)=>`<th>${DAYS_IT[i]}<br><span style="font-weight:400;font-size:10px">${fmtDate(d)}</span></th>`).join('')+
-    '<th>Ore</th><th>Str.</th><th></th></tr>';
+    '<th>Ore</th><th>Ore S</th><th></th></tr>';
   document.getElementById('table-body').innerHTML=workers.map(w=>{
     const cells=days.map(d=>{
       const dk=fmtDateKey(d);const s=getShift(w.id,dk);
-      const ot=getOT(w.id,dk);const note=getNote(w.id,dk);
+      const note=getNote(w.id,dk);
       return `<td class="shift-cell">
         <span class="shift-badge ${SHIFT_CSS[s]}" onclick="cycleShift(${w.id},'${dk}')">${s==='OFF'?'—':s}
-          ${ot>0?`<span class="ot-dot" title="${ot}h straord."></span>`:''}
-          ${note?`<span class="note-dot" title="${note.replace(/"/g,'&quot;')}"></span>`:''}
+          ${note?`<span class="note-dot"></span>`:''}
         </span>
+        ${note?`<span class="cell-note" title="${note.replace(/"/g,'&quot;')}">${note}</span>`:''}
         <div style="margin-top:2px;text-align:center">
           <button class="btn sm" onclick="openCellDetail(${w.id},'${dk}')" title="Modifica dettaglio">&#9998;</button>
         </div>
       </td>`;
     }).join('');
-    const ore=days.filter(d=>['M','P','N'].includes(getShift(w.id,fmtDateKey(d)))).length*8;
+    const ore=days.filter(d=>['G','S','N'].includes(getShift(w.id,fmtDateKey(d)))).length*8;
     const oreOt=days.reduce((a,d)=>a+getOT(w.id,fmtDateKey(d)),0);
     return `<tr>
       <td class="op-cell">${w.name}<br><span class="ruolo">${w.role}</span></td>
@@ -234,8 +234,8 @@ function renderSummary(days){
   workers.forEach(w=>{
     let ha=false;
     days.forEach(d=>{const dk=fmtDateKey(d);const s=getShift(w.id,dk);
-      if(['M','P','N'].includes(s)){ore+=8;ha=true;}
-      if(s==='N')notti++;if(s==='F')ferie++;ot+=getOT(w.id,dk);
+      if(['G','S','N'].includes(s)){ore+=8;ha=true;}
+      if(s==='N')notti++;if(s==='FE')ferie++;ot+=getOT(w.id,dk);
     });if(ha)attivi++;
   });
   document.getElementById('summary-row').innerHTML=`
@@ -275,7 +275,7 @@ function renderMonth(){
   let ore=0,ot=0,notti=0,ferie=0;
   for(let d=1;d<=lastDay.getDate();d++){
     const dk=fmtDateKey(new Date(y,m,d));const s=getShift(wid,dk);
-    if(['M','P','N'].includes(s))ore+=8;if(s==='N')notti++;if(s==='F')ferie++;ot+=getOT(wid,dk);
+    if(['G','S','N'].includes(s))ore+=8;if(s==='N')notti++;if(s==='FE')ferie++;ot+=getOT(wid,dk);
   }
   document.getElementById('month-summary').innerHTML=`
     <div class="stat-card"><div class="slabel">Ore lavorate</div><div class="sval">${ore}h</div></div>
@@ -298,8 +298,8 @@ function openCellDetail(wid,dk){
         ${SHIFTS.filter(s=>s!=='OFF').map(s=>`<button class="sp-btn" style="background:${SHIFT_BG[s]};color:${SHIFT_FG[s]};${curS===s?'outline:2px solid #185FA5;':''}" onclick="selectShift(${wid},'${dk}','${s}',this)">${SHIFT_LABELS[s]}</button>`).join('')}
         <button class="sp-btn" style="background:#f0f0ee;color:#666;${curS==='OFF'?'outline:2px solid #185FA5;':''}" onclick="selectShift(${wid},'${dk}','OFF',this)">Non assegnato</button>
       </div>
-      <label>Ore straordinarie</label>
-      <input type="number" id="m-ot" min="0" max="12" step="0.5" value="${curOT}" placeholder="es. 2" />
+      <label>Ore straordinarie aggiuntive</label>
+      <input type="number" id="m-ot" min="0" max="12" step="0.5" value="${curOT}" placeholder="es. 2 (ore extra oltre il turno)" />
       <label>Nota / commento</label>
       <textarea id="m-note" placeholder="Es. sostituzione collega, lavoro urgente...">${curNote}</textarea>
       <div class="modal-actions">
@@ -367,23 +367,33 @@ function exportCSV(){
     let rows=[],header=[];
     if(currentView==='week'){
       const days=[];for(let i=0;i<7;i++)days.push(addDays(currentWeekStart,i));
-      header=['Operaio','Ruolo',...days.map(d=>DAYS_IT[d.getDay()===0?6:d.getDay()-1]+' '+fmtDate(d)),'Ore reg.','Straord.'];
+      const dayHeaders=days.map(d=>DAYS_IT[d.getDay()===0?6:d.getDay()-1]+' '+fmtDate(d));
+      const notaHeaders=days.map(d=>'Nota '+DAYS_IT[d.getDay()===0?6:d.getDay()-1]+' '+fmtDate(d));
+      header=['Operaio','Ruolo'];
+      dayHeaders.forEach((dh,i)=>{header.push(dh);header.push(notaHeaders[i]);});
+      header.push('Ore reg.','Ore extra');
       rows=workers.map(w=>{
-        const cells=days.map(d=>SHIFT_LABELS[getShift(w.id,fmtDateKey(d))]);
-        const ore=days.filter(d=>['M','P','N'].includes(getShift(w.id,fmtDateKey(d)))).length*8;
+        const row=[w.name,w.role];
+        days.forEach(d=>{
+          const dk=fmtDateKey(d);
+          row.push(SHIFT_LABELS[getShift(w.id,dk)]);
+          row.push(getNote(w.id,dk));
+        });
+        const ore=days.filter(d=>['G','S','N'].includes(getShift(w.id,fmtDateKey(d)))).length*8;
         const ot=days.reduce((a,d)=>a+getOT(w.id,fmtDateKey(d)),0);
-        return [w.name,w.role,...cells,ore+'h',ot+'h'];
+        row.push(ore+'h',ot>0?ot+'h':'-');
+        return row;
       });
     } else {
       const wid=parseInt(document.getElementById('month-worker-sel').value);
       const w=workers.find(x=>x.id===wid);
       if(!w){showToast('Nessun operaio selezionato');return;}
-      header=['Data','Turno','Ore reg.','Straordinari','Nota'];
+      header=['Data','Turno','Ore reg.','Ore extra','Commento'];
       const lastDay=new Date(currentMonth.y,currentMonth.m+1,0).getDate();
       for(let d=1;d<=lastDay;d++){
         const date=new Date(currentMonth.y,currentMonth.m,d);
         const dk=fmtDateKey(date);const s=getShift(wid,dk);
-        rows.push([fmtDate(date),SHIFT_LABELS[s],['M','P','N'].includes(s)?'8h':'0h',getOT(wid,dk)+'h',getNote(wid,dk)]);
+        rows.push([fmtDate(date),SHIFT_LABELS[s],['G','S','N'].includes(s)?'8h':'0h',getOT(wid,dk)>0?getOT(wid,dk)+'h':'-',getNote(wid,dk)]);
       }
       rows.unshift([w.name+' — '+MONTHS_IT[currentMonth.m]+' '+currentMonth.y,'','','','']);
     }
