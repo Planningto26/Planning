@@ -81,6 +81,7 @@ td.shift-cell{padding:3px;text-align:center;min-width:52px}
       <button class="btn" id="tab-month" onclick="switchView('month')">Vista mese</button>
     </div>
     <button class="btn primary" onclick="openAddWorker()">+ Aggiungi operaio</button>
+    <button class="btn" onclick="openManageWorkers()">Gestisci operai</button>
     <button class="btn" onclick="exportCSV()">&#11015; Esporta CSV</button>
   </div>
 
@@ -92,11 +93,11 @@ td.shift-cell{padding:3px;text-align:center;min-width:52px}
 
   <div class="legend">
     <div class="leg-item"><div class="leg-dot" style="background:#B5D4F4"></div>Giornata (G)</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#FAC775"></div>Straordinario (S)</div>
     <div class="leg-item"><div class="leg-dot" style="background:#CECBF6"></div>Notte (N)</div>
     <div class="leg-item"><div class="leg-dot" style="background:#D3D1C7"></div>Riposo (R)</div>
     <div class="leg-item"><div class="leg-dot" style="background:#F5C4B3"></div>Ferie (FE)</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#B5D4F4;width:6px;height:6px;border-radius:50%"></div>Nota</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#FAC775"></div>Straordinario</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#185FA5;width:6px;height:6px;border-radius:50%"></div>Nota</div>
   </div>
 
   <div class="container">
@@ -125,11 +126,12 @@ td.shift-cell{padding:3px;text-align:center;min-width:52px}
 <div class="toast" id="toast"></div>
 
 <script>
-const SHIFTS=['G','S','N','R','FE','OFF'];
-const SHIFT_LABELS={G:'Giornata',S:'Straordinario',N:'Notte',R:'Riposo',FE:'Ferie',OFF:'Non assegnato'};
-const SHIFT_BG={G:'#B5D4F4',S:'#FAC775',N:'#CECBF6',R:'#D3D1C7',FE:'#F5C4B3',OFF:'transparent'};
-const SHIFT_FG={G:'#0C447C',S:'#633806',N:'#3C3489',R:'#444',FE:'#712B13',OFF:'#aaa'};
-const SHIFT_CSS={G:'s-G',S:'s-S',N:'s-N',R:'s-R',FE:'s-FE',OFF:'s-OFF'};
+const SHIFTS=['G','N','R','FE','OFF'];
+const SHIFT_LABELS={G:'Giornata',N:'Notte',R:'Riposo',FE:'Ferie',OFF:'Non assegnato'};
+const SHIFT_BG={G:'#B5D4F4',N:'#CECBF6',R:'#D3D1C7',FE:'#F5C4B3',OFF:'transparent'};
+const SHIFT_FG={G:'#0C447C',N:'#3C3489',R:'#444',FE:'#712B13',OFF:'#aaa'};
+const SHIFT_CSS={G:'s-G',N:'s-N',R:'s-R',FE:'s-FE',OFF:'s-OFF'};
+const RUOLI_TIPO=['Tecnico/Operaio','Capo Cantiere'];
 const DAYS_IT=['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
 const MONTHS_IT=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 
@@ -139,11 +141,11 @@ let currentMonth={y:2026,m:4};
 let nextId=100;
 
 let workers=JSON.parse(localStorage.getItem('po_workers')||'null')||[
-  {id:1,name:'Marco Bianchi',role:'Elettricista'},
-  {id:2,name:'Luigi Rossi',role:'Idraulico'},
-  {id:3,name:'Giovanni Verdi',role:'Muratore'},
-  {id:4,name:'Antonio Neri',role:'Carpentiere'},
-  {id:5,name:'Franco Esposito',role:'Elettricista'},
+  {id:1,name:'Marco Bianchi',role:'Elettricista',tipo:'Tecnico/Operaio'},
+  {id:2,name:'Luigi Rossi',role:'Idraulico',tipo:'Tecnico/Operaio'},
+  {id:3,name:'Giovanni Verdi',role:'Muratore',tipo:'Tecnico/Operaio'},
+  {id:4,name:'Antonio Neri',role:'Carpentiere',tipo:'Capo Cantiere'},
+  {id:5,name:'Franco Esposito',role:'Elettricista',tipo:'Tecnico/Operaio'},
 ];
 let schedule=JSON.parse(localStorage.getItem('po_schedule')||'{}');
 let overtime=JSON.parse(localStorage.getItem('po_overtime')||'{}');
@@ -195,33 +197,42 @@ function navNext(){
 function render(){
   const days=[];for(let i=0;i<7;i++)days.push(addDays(currentWeekStart,i));
   document.getElementById('nav-label').textContent=fmtDate(days[0])+' — '+fmtDate(days[6])+' '+days[0].getFullYear();
-  document.getElementById('table-head').innerHTML='<tr><th class="op-col">Operaio</th>'+
-    days.map((d,i)=>`<th>${DAYS_IT[i]}<br><span style="font-weight:400;font-size:10px">${fmtDate(d)}</span></th>`).join('')+
-    '<th>Ore</th><th>Ore S</th><th></th></tr>';
-  document.getElementById('table-body').innerHTML=workers.map(w=>{
-    const cells=days.map(d=>{
-      const dk=fmtDateKey(d);const s=getShift(w.id,dk);
+
+  // Header: Data col + one col per worker
+  const tipoBadge=w=>{
+    const cc=w.tipo==='Capo Cantiere';
+    return `<span style="display:inline-block;font-size:9px;font-weight:600;padding:1px 5px;border-radius:3px;margin-top:2px;background:${cc?'#CECBF6':'#C0DD97'};color:${cc?'#3C3489':'#27500A'}">${w.tipo||'Tecnico/Operaio'}</span>`;
+  };
+  document.getElementById('table-head').innerHTML='<tr><th style="text-align:left;min-width:90px;padding-left:8px;font-size:11px;font-weight:500;color:#666;background:#f8f8f6;border-bottom:1px solid #e8e8e4">Data</th>'+
+    workers.map(w=>`<th style="min-width:110px;background:#f8f8f6;border-bottom:1px solid #e8e8e4;padding:5px 4px">
+      <div style="font-size:11px;font-weight:600;color:#1a1a1a">${w.name}</div>
+      <div style="font-size:10px;font-weight:400;color:#888">${w.role}</div>
+      ${tipoBadge(w)}
+    </th>`).join('')+
+    '<th style="min-width:55px;text-align:center;background:#f8f8f6;border-bottom:1px solid #e8e8e4;font-size:11px;font-weight:500;color:#666"></th></tr>';
+
+  // Body: one row per day
+  document.getElementById('table-body').innerHTML=days.map(d=>{
+    const dk=fmtDateKey(d);
+    const dayLabel=`<td style="padding:6px 8px;font-size:11px;font-weight:600;color:#444;white-space:nowrap;border-right:1px solid #f0f0ec">${DAYS_IT[d.getDay()===0?6:d.getDay()-1]}<br><span style="font-weight:400;color:#888">${fmtDate(d)}</span></td>`;
+    const workerCells=workers.map(w=>{
+      const s=getShift(w.id,dk);
+      const ot=getOT(w.id,dk);
       const note=getNote(w.id,dk);
-      return `<td class="shift-cell">
+      return `<td class="shift-cell" style="vertical-align:top">
         <span class="shift-badge ${SHIFT_CSS[s]}" onclick="cycleShift(${w.id},'${dk}')">${s==='OFF'?'—':s}
           ${note?`<span class="note-dot"></span>`:''}
         </span>
+        ${ot>0?`<span style="display:inline-block;font-size:9px;font-weight:600;background:#FAC775;color:#633806;border-radius:3px;padding:1px 4px;margin-left:2px">+${ot}h</span>`:''}
         ${note?`<span class="cell-note" title="${note.replace(/"/g,'&quot;')}">${note}</span>`:''}
         <div style="margin-top:2px;text-align:center">
           <button class="btn sm" onclick="openCellDetail(${w.id},'${dk}')" title="Modifica dettaglio">&#9998;</button>
         </div>
       </td>`;
     }).join('');
-    const ore=days.filter(d=>['G','S','N'].includes(getShift(w.id,fmtDateKey(d)))).length*8;
-    const oreOt=days.reduce((a,d)=>a+getOT(w.id,fmtDateKey(d)),0);
-    return `<tr>
-      <td class="op-cell">${w.name}<br><span class="ruolo">${w.role}</span></td>
-      ${cells}
-      <td style="text-align:center;font-size:11px;color:#666;padding:4px">${ore}h</td>
-      <td style="text-align:center;font-size:11px;color:#BA7517;padding:4px">${oreOt>0?oreOt+'h':'-'}</td>
-      <td style="padding:3px"><button class="btn danger sm" onclick="removeWorker(${w.id})">&#x2715;</button></td>
-    </tr>`;
+    return `<tr>${dayLabel}${workerCells}<td></td></tr>`;
   }).join('');
+
   renderSummary(days);
 }
 
@@ -234,7 +245,7 @@ function renderSummary(days){
   workers.forEach(w=>{
     let ha=false;
     days.forEach(d=>{const dk=fmtDateKey(d);const s=getShift(w.id,dk);
-      if(['G','S','N'].includes(s)){ore+=8;ha=true;}
+      if(['G','N'].includes(s)){ore+=8;ha=true;}
       if(s==='N')notti++;if(s==='FE')ferie++;ot+=getOT(w.id,dk);
     });if(ha)attivi++;
   });
@@ -275,7 +286,7 @@ function renderMonth(){
   let ore=0,ot=0,notti=0,ferie=0;
   for(let d=1;d<=lastDay.getDate();d++){
     const dk=fmtDateKey(new Date(y,m,d));const s=getShift(wid,dk);
-    if(['G','S','N'].includes(s))ore+=8;if(s==='N')notti++;if(s==='FE')ferie++;ot+=getOT(wid,dk);
+    if(['G','N'].includes(s))ore+=8;if(s==='N')notti++;if(s==='FE')ferie++;ot+=getOT(wid,dk);
   }
   document.getElementById('month-summary').innerHTML=`
     <div class="stat-card"><div class="slabel">Ore lavorate</div><div class="sval">${ore}h</div></div>
@@ -298,9 +309,15 @@ function openCellDetail(wid,dk){
         ${SHIFTS.filter(s=>s!=='OFF').map(s=>`<button class="sp-btn" style="background:${SHIFT_BG[s]};color:${SHIFT_FG[s]};${curS===s?'outline:2px solid #185FA5;':''}" onclick="selectShift(${wid},'${dk}','${s}',this)">${SHIFT_LABELS[s]}</button>`).join('')}
         <button class="sp-btn" style="background:#f0f0ee;color:#666;${curS==='OFF'?'outline:2px solid #185FA5;':''}" onclick="selectShift(${wid},'${dk}','OFF',this)">Non assegnato</button>
       </div>
-      <label>Ore straordinarie aggiuntive</label>
-      <input type="number" id="m-ot" min="0" max="12" step="0.5" value="${curOT}" placeholder="es. 2 (ore extra oltre il turno)" />
-      <label>Nota / commento</label>
+      <label style="margin-top:12px;display:flex;align-items:center;gap:6px;cursor:pointer">
+        <input type="checkbox" id="m-ot-check" onchange="toggleOT()" ${curOT>0?'checked':''} style="width:auto;margin:0"/>
+        <span style="font-size:12px;color:#633806;font-weight:600">Straordinario</span>
+      </label>
+      <div id="m-ot-wrap" style="margin-top:6px;${curOT>0?'':'display:none'}">
+        <label>Ore straordinarie</label>
+        <input type="number" id="m-ot" min="0.5" max="12" step="0.5" value="${curOT||''}" placeholder="es. 2" />
+      </div>
+      <label>Commento</label>
       <textarea id="m-note" placeholder="Es. sostituzione collega, lavoro urgente...">${curNote}</textarea>
       <div class="modal-actions">
         <button class="btn" onclick="document.getElementById('modal-area').innerHTML=''">Annulla</button>
@@ -310,6 +327,12 @@ function openCellDetail(wid,dk){
   </div>`;
 }
 
+function toggleOT(){
+  const checked=document.getElementById('m-ot-check').checked;
+  document.getElementById('m-ot-wrap').style.display=checked?'':'none';
+  if(!checked&&document.getElementById('m-ot'))document.getElementById('m-ot').value='';
+}
+
 function selectShift(wid,dk,s,btn){
   setShift(wid,dk,s);
   btn.closest('.shift-picker').querySelectorAll('.sp-btn').forEach(b=>b.style.outline='');
@@ -317,7 +340,8 @@ function selectShift(wid,dk,s,btn){
 }
 
 function saveCell(wid,dk){
-  const ot=parseFloat(document.getElementById('m-ot').value)||0;
+  const otCheck=document.getElementById('m-ot-check').checked;
+  const ot=otCheck?(parseFloat(document.getElementById('m-ot').value)||0):0;
   const note=document.getElementById('m-note').value.trim();
   setOT(wid,dk,ot);setNote(wid,dk,note);
   document.getElementById('modal-area').innerHTML='';
@@ -331,7 +355,32 @@ function removeWorker(id){
   if(!confirm('Rimuovere questo operaio dal planning?'))return;
   workers=workers.filter(w=>w.id!==id);
   delete schedule[id];delete overtime[id];delete notes[id];
-  save();render();
+  save();
+  document.getElementById('modal-area').innerHTML='';
+  openManageWorkers();
+}
+
+function openManageWorkers(){
+  if(workers.length===0){showToast('Nessun operaio presente');return;}
+  document.getElementById('modal-area').innerHTML=`
+  <div class="modal-overlay" onclick="closeModal(event,this)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <h3>Gestisci operai</h3>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+        ${workers.map(w=>`
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #eee;border-radius:8px">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600">${w.name}</div>
+            <div style="font-size:11px;color:#888">${w.role} &middot; <span style="color:${w.tipo==='Capo Cantiere'?'#3C3489':'#27500A'}">${w.tipo||'Tecnico/Operaio'}</span></div>
+          </div>
+          <button class="btn danger sm" onclick="removeWorker(${w.id})">&#x2715; Rimuovi</button>
+        </div>`).join('')}
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="document.getElementById('modal-area').innerHTML=''">Chiudi</button>
+      </div>
+    </div>
+  </div>`;
 }
 
 function openAddWorker(){
@@ -343,6 +392,11 @@ function openAddWorker(){
       <input id="m-name" placeholder="Es. Mario Rossi" autofocus />
       <label>Qualifica / Ruolo</label>
       <input id="m-role" placeholder="Es. Elettricista" />
+      <label>Tipo</label>
+      <select id="m-tipo">
+        <option value="Tecnico/Operaio">Tecnico/Operaio</option>
+        <option value="Capo Cantiere">Capo Cantiere</option>
+      </select>
       <div class="modal-actions">
         <button class="btn" onclick="document.getElementById('modal-area').innerHTML=''">Annulla</button>
         <button class="btn primary" onclick="confirmAddWorker()">Aggiungi</button>
@@ -354,8 +408,9 @@ function openAddWorker(){
 function confirmAddWorker(){
   const name=document.getElementById('m-name').value.trim();
   const role=document.getElementById('m-role').value.trim();
+  const tipo=document.getElementById('m-tipo').value;
   if(!name){alert('Inserisci il nome dell\'operaio');return;}
-  workers.push({id:++nextId,name,role:role||'Generico'});
+  workers.push({id:++nextId,name,role:role||'Generico',tipo});
   save();
   document.getElementById('modal-area').innerHTML='';
   showToast('Operaio aggiunto!');
@@ -367,35 +422,37 @@ function exportCSV(){
     let rows=[],header=[];
     if(currentView==='week'){
       const days=[];for(let i=0;i<7;i++)days.push(addDays(currentWeekStart,i));
-      const dayHeaders=days.map(d=>DAYS_IT[d.getDay()===0?6:d.getDay()-1]+' '+fmtDate(d));
-      const notaHeaders=days.map(d=>'Nota '+DAYS_IT[d.getDay()===0?6:d.getDay()-1]+' '+fmtDate(d));
-      header=['Operaio','Ruolo'];
-      dayHeaders.forEach((dh,i)=>{header.push(dh);header.push(notaHeaders[i]);});
-      header.push('Ore reg.','Ore extra');
+      // Header: Data + per ogni giorno: Turno + Straord. + Commento
+      header=['Operaio','Tipo','Ruolo'];
+      days.forEach(d=>{
+        const dl=DAYS_IT[d.getDay()===0?6:d.getDay()-1]+' '+fmtDate(d);
+        header.push('Turno '+dl,'Straord. '+dl,'Commento '+dl);
+      });
+      header.push('Ore reg.','Ore straord. tot.');
       rows=workers.map(w=>{
-        const row=[w.name,w.role];
+        const row=[w.name,w.tipo||'Tecnico/Operaio',w.role];
+        let oreReg=0,oreOt=0;
         days.forEach(d=>{
-          const dk=fmtDateKey(d);
-          row.push(SHIFT_LABELS[getShift(w.id,dk)]);
-          row.push(getNote(w.id,dk));
+          const dk=fmtDateKey(d);const s=getShift(w.id,dk);const ot=getOT(w.id,dk);
+          row.push(SHIFT_LABELS[s],ot>0?ot+'h':'-',getNote(w.id,dk));
+          if(['G','N'].includes(s))oreReg+=8;
+          oreOt+=ot;
         });
-        const ore=days.filter(d=>['G','S','N'].includes(getShift(w.id,fmtDateKey(d)))).length*8;
-        const ot=days.reduce((a,d)=>a+getOT(w.id,fmtDateKey(d)),0);
-        row.push(ore+'h',ot>0?ot+'h':'-');
+        row.push(oreReg+'h',oreOt>0?oreOt+'h':'-');
         return row;
       });
     } else {
       const wid=parseInt(document.getElementById('month-worker-sel').value);
       const w=workers.find(x=>x.id===wid);
       if(!w){showToast('Nessun operaio selezionato');return;}
-      header=['Data','Turno','Ore reg.','Ore extra','Commento'];
+      header=['Data','Turno','Ore reg.','Straordinario (h)','Commento'];
       const lastDay=new Date(currentMonth.y,currentMonth.m+1,0).getDate();
       for(let d=1;d<=lastDay;d++){
         const date=new Date(currentMonth.y,currentMonth.m,d);
-        const dk=fmtDateKey(date);const s=getShift(wid,dk);
-        rows.push([fmtDate(date),SHIFT_LABELS[s],['G','S','N'].includes(s)?'8h':'0h',getOT(wid,dk)>0?getOT(wid,dk)+'h':'-',getNote(wid,dk)]);
+        const dk=fmtDateKey(date);const s=getShift(wid,dk);const ot=getOT(wid,dk);
+        rows.push([fmtDate(date),SHIFT_LABELS[s],['G','N'].includes(s)?'8h':'0h',ot>0?ot+'h':'-',getNote(wid,dk)]);
       }
-      rows.unshift([w.name+' — '+MONTHS_IT[currentMonth.m]+' '+currentMonth.y,'','','','']);
+      rows.unshift([`${w.name} (${w.tipo||'Tecnico/Operaio'}) — ${MONTHS_IT[currentMonth.m]} ${currentMonth.y}`,'','','','']);
     }
     const esc=v=>'"'+String(v).replace(/"/g,'""')+'"';
     const csv=[header,...rows].map(r=>r.map(esc).join(',')).join('\r\n');
