@@ -25,9 +25,12 @@ body{font-family:system-ui,sans-serif;background:#f5f5f3;color:#1a1a1a;min-heigh
 .grid-wrapper{overflow-x:auto}
 table{width:100%;border-collapse:collapse;min-width:600px}
 thead th{font-size:11px;font-weight:500;color:#666;padding:7px 5px;border-bottom:1px solid #e8e8e4;text-align:center;background:#f8f8f6}
+/* Prima colonna sticky */
+thead th:first-child{position:sticky;left:0;z-index:3;background:#f8f8f6;border-right:2px solid #d8d8d4}
 tbody tr{border-bottom:1px solid #f0f0ec}
 tbody tr:hover td{background:#fafaf8}
-td.date-cell{padding:6px 8px;font-size:11px;font-weight:600;color:#444;white-space:nowrap;border-right:1px solid #e8e8e4;vertical-align:middle}
+td.date-cell{padding:6px 8px;font-size:11px;font-weight:600;color:#444;white-space:nowrap;border-right:2px solid #d8d8d4;vertical-align:middle;position:sticky;left:0;z-index:2;background:#fff}
+tbody tr:hover td.date-cell{background:#f5f5f3}
 td.shift-cell{padding:4px 3px;text-align:center;min-width:110px;vertical-align:top}
 .sbadge{display:inline-flex;align-items:center;justify-content:center;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;min-width:44px;position:relative;user-select:none}
 .sbadge:hover{opacity:.8}
@@ -606,48 +609,106 @@ function openAddWorker(){
 // ═══════════════════════════════════════════════════════════════════════════════
 function exportCSV(){
   try{
-    let rows=[],header=[];
-    if(view==='week'){
-      const days=[]; for(let i=0;i<7;i++) days.push(addD(wkStart,i));
-      header=['Operaio','Tipo','Ruolo'];
-      days.forEach(d=>{
-        const dl=DIT[dw(d)]+' '+fmt(d);
-        header.push('Turno '+dl,'Straord. '+dl,'Commento '+dl);
+    // Funzione di escape CSV: racchiude ogni valore tra virgolette
+    const q = v => '"' + String(v === null || v === undefined ? '' : v).replace(/"/g,'""') + '"';
+
+    let rows = [], header = [];
+
+    if(view === 'week'){
+      // ── Vista settimana ──────────────────────────────────────────────────────
+      // Costruisce i 7 giorni della settimana corrente
+      const days = [];
+      for(let i = 0; i < 7; i++) days.push(addD(wkStart, i));
+
+      // Intestazione: Operaio, Tipo, Ruolo, poi per ogni giorno 3 colonne
+      header = ['Operaio', 'Tipo', 'Ruolo'];
+      days.forEach(d => {
+        const dl = DIT[dw(d)] + ' ' + fmt(d);
+        header.push('Turno ' + dl, 'Straordinario ' + dl, 'Commento ' + dl);
       });
-      header.push('Ore reg.','Ore straord. tot.');
-      rows=workers.map(w=>{
-        const row=[w.name, w.tipo||'Tecnico/Operaio', w.role];
-        let oreR=0,oreO=0;
-        days.forEach(d=>{
-          const dk=key(d),s=gS(w.id,dk),ot=gO(w.id,dk);
-          row.push(SL[s], ot>0?ot+'h':'-', gN(w.id,dk));
-          if(['G','N'].includes(s))oreR+=8; oreO+=ot;
+      header.push('Ore reg. tot.', 'Ore straord. tot.');
+
+      // Una riga per operaio
+      rows = workers.map(w => {
+        // Colonne fisse
+        const row = [
+          w.name,
+          w.tipo || 'Tecnico/Operaio',
+          w.role || ''
+        ];
+        let oreReg = 0, oreOt = 0;
+
+        // Per ogni giorno: turno, straordinari, commento
+        days.forEach(d => {
+          const dk  = key(d);
+          const s   = gS(w.id, dk);   // codice turno: G / N / R / FE / OFF
+          const ot  = gO(w.id, dk);   // ore straordinarie (numero)
+          const nt  = gN(w.id, dk);   // commento/nota (stringa)
+
+          // Turno: etichetta leggibile
+          row.push(SL[s] || 'Non assegnato');
+          // Straordinario: ore se presenti, altrimenti vuoto
+          row.push(ot > 0 ? ot + 'h' : '');
+          // Commento: testo oppure vuoto
+          row.push(nt || '');
+
+          if(['G','N'].includes(s)) oreReg += 8;
+          oreOt += ot;
         });
-        row.push(oreR+'h', oreO>0?oreO+'h':'-');
+
+        row.push(oreReg + 'h', oreOt > 0 ? oreOt + 'h' : '');
         return row;
       });
+
     } else {
-      const wid=parseInt(document.getElementById('msel').value);
-      const w=workers.find(x=>x.id===wid);
+      // ── Vista mese ───────────────────────────────────────────────────────────
+      const wid = parseInt(document.getElementById('msel').value);
+      const w   = workers.find(x => x.id === wid);
       if(!w){ toast('Nessun operaio selezionato'); return; }
-      header=['Data','Turno','Ore reg.','Straordinario (h)','Commento'];
-      const last=new Date(curMon.y,curMon.m+1,0).getDate();
-      for(let d=1;d<=last;d++){
-        const date=new Date(curMon.y,curMon.m,d);
-        const dk=key(date),s=gS(wid,dk),ot=gO(wid,dk);
-        rows.push([fmt(date),SL[s],['G','N'].includes(s)?'8h':'0h',ot>0?ot+'h':'-',gN(wid,dk)]);
+
+      // Intestazione mese
+      header = ['Data', 'Giorno', 'Turno', 'Ore reg.', 'Straordinario (h)', 'Commento'];
+
+      // Riga titolo operaio
+      rows.push([
+        w.name + ' (' + (w.tipo || 'Tecnico/Operaio') + ')',
+        '',
+        MIT[curMon.m] + ' ' + curMon.y,
+        '', '', ''
+      ]);
+
+      const last = new Date(curMon.y, curMon.m + 1, 0).getDate();
+      for(let d = 1; d <= last; d++){
+        const date = new Date(curMon.y, curMon.m, d);
+        const dk   = key(date);
+        const s    = gS(wid, dk);
+        const ot   = gO(wid, dk);
+        const nt   = gN(wid, dk);
+        rows.push([
+          fmt(date),
+          DIT[dw(date)],
+          SL[s] || 'Non assegnato',
+          ['G','N'].includes(s) ? '8h' : '',
+          ot > 0 ? ot + 'h' : '',
+          nt || ''
+        ]);
       }
-      rows.unshift([`${w.name} (${w.tipo||'Tecnico/Operaio'}) — ${MIT[curMon.m]} ${curMon.y}`,'','','','']);
     }
-    const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
-    const csv=[header,...rows].map(r=>r.map(q).join(',')).join('\r\n');
-    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a'); a.href=url; a.download='planning_operai.csv';
-    document.body.appendChild(a); a.click();
-    setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },800);
+
+    // Serializza in CSV (separatore virgola, encoding UTF-8 BOM)
+    const csv = [header, ...rows].map(r => r.map(q).join(',')).join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = 'planning_operai_' + (view === 'week'
+      ? fmt(addD(wkStart,0)).replace('/','') + '-' + fmt(addD(wkStart,6)).replace('/','')
+      : MIT[curMon.m] + '_' + curMon.y) + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 800);
     toast('CSV esportato!');
-  } catch(e){ toast('Errore: '+e.message); }
+  } catch(e){ toast('Errore: ' + e.message); }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
