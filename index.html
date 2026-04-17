@@ -149,14 +149,40 @@ const MIT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
 let view = 'week';
 let wkStart = wkOf(new Date('2026-05-01'));
 let curMon = {y:2026, m:4};
-let nid = 100;
+let nid = 200;
 
 let workers = JSON.parse(localStorage.getItem('po_w') || 'null') || [
-  {id:1, name:'Marco Bianchi',   role:'Elettricista', tipo:'Tecnico/Operaio'},
-  {id:2, name:'Luigi Rossi',     role:'Idraulico',    tipo:'Tecnico/Operaio'},
-  {id:3, name:'Giovanni Verdi',  role:'Muratore',     tipo:'Tecnico/Operaio'},
-  {id:4, name:'Antonio Neri',    role:'Carpentiere',  tipo:'Capo Cantiere'},
-  {id:5, name:'Franco Esposito', role:'Elettricista', tipo:'Tecnico/Operaio'},
+  {id:1,  name:'Louis Jean Patrick',      role:'', tipo:'Tecnico/Operaio'},
+  {id:2,  name:'Bartus Odon Csaba',       role:'', tipo:'Tecnico/Operaio'},
+  {id:3,  name:'Zoltan Lucàs',            role:'', tipo:'Tecnico/Operaio'},
+  {id:4,  name:'Andre Jean Bernard',      role:'', tipo:'Tecnico/Operaio'},
+  {id:5,  name:'Nicolas Marie',           role:'', tipo:'Tecnico/Operaio'},
+  {id:6,  name:'Gaetan Gilbert',          role:'', tipo:'Tecnico/Operaio'},
+  {id:7,  name:'Derzhovskyi Oleksandr',   role:'', tipo:'Tecnico/Operaio'},
+  {id:8,  name:'Louis Brandon',           role:'', tipo:'Tecnico/Operaio'},
+  {id:9,  name:'Pili Alessandro',         role:'', tipo:'Tecnico/Operaio'},
+  {id:10, name:'Arraj Xhenijsian',        role:'', tipo:'Tecnico/Operaio'},
+  {id:11, name:'Salama Hani',             role:'', tipo:'Tecnico/Operaio'},
+  {id:12, name:'Villani Luca',            role:'', tipo:'Tecnico/Operaio'},
+  {id:13, name:'Falanga Nicolò',          role:'', tipo:'Tecnico/Operaio'},
+  {id:14, name:'Ruzzoli Daniele',         role:'', tipo:'Tecnico/Operaio'},
+  {id:15, name:'Zaccara Valerio',         role:'', tipo:'Tecnico/Operaio'},
+  {id:16, name:'Scarano Pasquale',        role:'', tipo:'Tecnico/Operaio'},
+  {id:17, name:'Mondello Francesco',      role:'', tipo:'Tecnico/Operaio'},
+  {id:18, name:'Mezini Mexhit',           role:'', tipo:'Tecnico/Operaio'},
+  {id:19, name:'Gijeci Preng',            role:'', tipo:'Tecnico/Operaio'},
+  {id:20, name:'Muhammad Shazad',         role:'', tipo:'Tecnico/Operaio'},
+  {id:21, name:'Ismajli Luigi',           role:'', tipo:'Tecnico/Operaio'},
+  {id:22, name:'Venv Dimitar',            role:'', tipo:'Tecnico/Operaio'},
+  {id:23, name:'Rizzo Placido',           role:'', tipo:'Tecnico/Operaio'},
+  {id:24, name:'Abdul Hussain',           role:'', tipo:'Tecnico/Operaio'},
+  {id:25, name:'Calin Daniel',            role:'', tipo:'Tecnico/Operaio'},
+  {id:26, name:'Ciprian Moraru',          role:'', tipo:'Tecnico/Operaio'},
+  {id:27, name:'Shiponchki Radslov',      role:'', tipo:'Tecnico/Operaio'},
+  {id:28, name:'Elayyane Miloud',         role:'', tipo:'Tecnico/Operaio'},
+  {id:29, name:'Alexander Stoimenov',     role:'', tipo:'Tecnico/Operaio'},
+  {id:30, name:'Dedej Besnik',            role:'', tipo:'Tecnico/Operaio'},
+  {id:31, name:'Leonardo Gallo',          role:'', tipo:'Tecnico/Operaio'},
 ];
 let sched = JSON.parse(localStorage.getItem('po_s') || '{}');
 let otime = JSON.parse(localStorage.getItem('po_o') || '{}');
@@ -446,16 +472,22 @@ function openManageWorkers(){
   const root=document.getElementById('modal-root');
   root.innerHTML=`
   <div class="moverlay" id="moverlay">
-    <div class="mbox">
+    <div class="mbox" style="max-width:460px">
       <h3>Gestisci operai</h3>
-      <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px" id="wlist">
+      <div style="margin-top:4px;margin-bottom:10px">
+        <input type="text" id="wsearch" placeholder="&#128269; Cerca operaio..."
+          style="width:100%;padding:6px 10px;font-size:12px;border-radius:8px;border:1px solid #ccc;outline:none">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;max-height:55vh;overflow-y:auto" id="wlist">
         ${workers.map(w=>`
-        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #eee;border-radius:8px">
-          <div style="flex:1">
-            <div style="font-size:13px;font-weight:700">${h(w.name)}</div>
-            <div style="font-size:11px;color:#888;margin-top:2px">${h(w.role)} &middot; ${tbadge(w)}</div>
+        <div class="wrow" data-name="${h(w.name).toLowerCase()}"
+          style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid #eee;border-radius:8px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h(w.name)}</div>
+            <div style="font-size:11px;color:#888;margin-top:1px">${w.role?h(w.role):'<span style="color:#bbb;font-style:italic">nessun ruolo</span>'} &middot; ${tbadge(w)}</div>
           </div>
-          <button class="btn danger sm" data-rid="${w.id}">&#x2715; Rimuovi</button>
+          <button class="btn sm" style="white-space:nowrap" data-eid="${w.id}">&#9998; Modifica</button>
+          <button class="btn danger sm" style="white-space:nowrap" data-rid="${w.id}">&#x2715;</button>
         </div>`).join('')}
       </div>
       <div class="mactions"><button class="btn" id="mbtn-cancel">Chiudi</button></div>
@@ -465,6 +497,16 @@ function openManageWorkers(){
   const overlay=root.querySelector('#moverlay');
   overlay.addEventListener('click',e=>{ if(e.target===overlay)closeModal(); });
   root.querySelector('#mbtn-cancel').addEventListener('click',closeModal);
+
+  // Ricerca live
+  root.querySelector('#wsearch').addEventListener('input',function(){
+    const q=this.value.toLowerCase();
+    root.querySelectorAll('.wrow').forEach(row=>{
+      row.style.display=row.dataset.name.includes(q)?'':'none';
+    });
+  });
+
+  // Rimuovi
   root.querySelectorAll('[data-rid]').forEach(btn=>{
     btn.addEventListener('click',()=>{
       const id=parseInt(btn.dataset.rid);
@@ -474,6 +516,52 @@ function openManageWorkers(){
       persist(); closeModal(); toast('Operaio rimosso');
       view==='week'?render():renderMonth();
     });
+  });
+
+  // Modifica
+  root.querySelectorAll('[data-eid]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      openEditWorker(parseInt(btn.dataset.eid));
+    });
+  });
+}
+
+function openEditWorker(id){
+  const w=workers.find(x=>x.id===id);
+  if(!w) return;
+  const root=document.getElementById('modal-root');
+  root.innerHTML=`
+  <div class="moverlay" id="moverlay">
+    <div class="mbox">
+      <h3>Modifica operaio</h3>
+      <span class="mlbl">Nome e cognome</span>
+      <input type="text" id="en" value="${h(w.name)}" placeholder="Nome e cognome">
+      <span class="mlbl">Qualifica / Ruolo</span>
+      <input type="text" id="er" value="${h(w.role)}" placeholder="Es. Elettricista">
+      <span class="mlbl">Tipo</span>
+      <select id="et">
+        <option value="Tecnico/Operaio" ${w.tipo==='Tecnico/Operaio'?'selected':''}>Tecnico/Operaio</option>
+        <option value="Capo Cantiere"   ${w.tipo==='Capo Cantiere'  ?'selected':''}>Capo Cantiere</option>
+      </select>
+      <div class="mactions">
+        <button class="btn" id="mbtn-back">&#8592; Indietro</button>
+        <button class="btn primary" id="mbtn-save">Salva modifiche</button>
+      </div>
+    </div>
+  </div>`;
+
+  const overlay=root.querySelector('#moverlay');
+  overlay.addEventListener('click',e=>{ if(e.target===overlay)closeModal(); });
+  root.querySelector('#mbtn-back').addEventListener('click', openManageWorkers);
+  root.querySelector('#mbtn-save').addEventListener('click',()=>{
+    const name=root.querySelector('#en').value.trim();
+    const role=root.querySelector('#er').value.trim();
+    const tipo=root.querySelector('#et').value;
+    if(!name){ alert("Il nome non può essere vuoto"); return; }
+    w.name=name; w.role=role; w.tipo=tipo;
+    persist(); toast('Modifiche salvate!');
+    openManageWorkers();
+    view==='week'?render():renderMonth();
   });
 }
 
