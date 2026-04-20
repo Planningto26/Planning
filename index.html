@@ -619,101 +619,98 @@ function openAddWorker(){
 // ═══════════════════════════════════════════════════════════════════════════════
 function exportCSV(){
   try{
-    // Funzione di escape CSV: racchiude ogni valore tra virgolette
-    const q = v => '"' + String(v === null || v === undefined ? '' : v).replace(/"/g,'""') + '"';
+    // Usa PUNTO E VIRGOLA come separatore — standard per Excel italiano
+    // Ogni campo tra virgolette per gestire testi con virgole o accenti
+    const q = v => '"' + String(v === null || v === undefined ? '' : v).replace(/"/g, '""') + '"';
+    const SEP = ';';
 
-    let rows = [], header = [];
+    // ── Struttura: una riga per ogni coppia (operaio × giorno) ────────────────
+    // Colonne fisse e sempre nello stesso ordine:
+    // Data | Giorno | Operaio | Ruolo | Tipo | Turno | Straordinario | Commento
+
+    const header = [
+      'Data',
+      'Giorno',
+      'Operaio',
+      'Ruolo',
+      'Tipo',
+      'Turno',
+      'Straordinario',
+      'Commento'
+    ];
+
+    const rows = [];
 
     if(view === 'week'){
-      // ── Vista settimana ──────────────────────────────────────────────────────
-      // Costruisce i 7 giorni della settimana corrente
+      // Vista settimana: 7 giorni × N operai
       const days = [];
       for(let i = 0; i < 7; i++) days.push(addD(wkStart, i));
 
-      // Intestazione: Operaio, Tipo, Ruolo, poi per ogni giorno 3 colonne
-      header = ['Operaio', 'Tipo', 'Ruolo'];
       days.forEach(d => {
-        const dl = DIT[dw(d)] + ' ' + fmt(d);
-        header.push('Turno ' + dl, 'Straordinario ' + dl, 'Commento ' + dl);
-      });
-      header.push('Ore reg. tot.', 'Ore straord. tot.');
+        const dk      = key(d);
+        const dataStr = fmt(d);
+        const giornoStr = DIT[dw(d)];
 
-      // Una riga per operaio
-      rows = workers.map(w => {
-        // Colonne fisse
-        const row = [
-          w.name,
-          w.tipo || 'Tecnico/Operaio',
-          w.role || ''
-        ];
-        let oreReg = 0, oreOt = 0;
+        workers.forEach(w => {
+          const wk   = String(w.id);
+          const s    = (sched[wk] && sched[wk][dk]) || 'OFF';
+          const ot   = (otime[wk] && otime[wk][dk]) || 0;
+          const nota = (nots[wk]  && nots[wk][dk])  || '';
 
-        // Per ogni giorno: turno, straordinari, commento
-        days.forEach(d => {
-          const dk  = key(d);
-          const s   = gS(w.id, dk);   // codice turno: G / N / R / FE / OFF
-          const ot  = gO(w.id, dk);   // ore straordinarie (numero)
-          const nt  = gN(w.id, dk);   // commento/nota (stringa)
-
-          // Turno: etichetta leggibile
-          row.push(SL[s] || 'Non assegnato');
-          // Straordinario: ore se presenti, altrimenti vuoto
-          row.push(ot > 0 ? ot + 'h' : '');
-          // Commento: testo oppure vuoto
-          row.push(nt || '');
-
-          if(['G','N'].includes(s)) oreReg += 8;
-          oreOt += ot;
+          rows.push([
+            dataStr,                            // Data (es. 27/04)
+            giornoStr,                          // Giorno (es. Lun)
+            w.name,                             // Operaio (nome e cognome)
+            w.role || '',                       // Ruolo (qualifica)
+            w.tipo || 'Tecnico/Operaio',        // Tipo (Capo Cantiere / Tecnico/Operaio)
+            SL[s] || 'Non assegnato',           // Turno (Giornata / Notte / Riposo / Ferie / Non assegnato)
+            ot > 0 ? ot + 'h' : '',            // Straordinario (es. 2h, vuoto se non presente)
+            nota                                // Commento (testo libero, vuoto se non presente)
+          ]);
         });
-
-        row.push(oreReg + 'h', oreOt > 0 ? oreOt + 'h' : '');
-        return row;
       });
 
     } else {
-      // ── Vista mese ───────────────────────────────────────────────────────────
-      const wid = parseInt(document.getElementById('msel').value);
-      const w   = workers.find(x => x.id === wid);
-      if(!w){ toast('Nessun operaio selezionato'); return; }
+      // Vista mese: tutti i giorni del mese × N operai
+      const {y, m} = curMon;
+      const last = new Date(y, m + 1, 0).getDate();
 
-      // Intestazione mese
-      header = ['Data', 'Giorno', 'Turno', 'Ore reg.', 'Straordinario (h)', 'Commento'];
-
-      // Riga titolo operaio
-      rows.push([
-        w.name + ' (' + (w.tipo || 'Tecnico/Operaio') + ')',
-        '',
-        MIT[curMon.m] + ' ' + curMon.y,
-        '', '', ''
-      ]);
-
-      const last = new Date(curMon.y, curMon.m + 1, 0).getDate();
       for(let d = 1; d <= last; d++){
-        const date = new Date(curMon.y, curMon.m, d);
-        const dk   = key(date);
-        const s    = gS(wid, dk);
-        const ot   = gO(wid, dk);
-        const nt   = gN(wid, dk);
-        rows.push([
-          fmt(date),
-          DIT[dw(date)],
-          SL[s] || 'Non assegnato',
-          ['G','N'].includes(s) ? '8h' : '',
-          ot > 0 ? ot + 'h' : '',
-          nt || ''
-        ]);
+        const date      = new Date(y, m, d);
+        const dk        = key(date);
+        const dataStr   = fmt(date);
+        const giornoStr = DIT[dw(date)];
+
+        workers.forEach(w => {
+          const wk   = String(w.id);
+          const s    = (sched[wk] && sched[wk][dk]) || 'OFF';
+          const ot   = (otime[wk] && otime[wk][dk]) || 0;
+          const nota = (nots[wk]  && nots[wk][dk])  || '';
+
+          rows.push([
+            dataStr,
+            giornoStr,
+            w.name,
+            w.role || '',
+            w.tipo || 'Tecnico/Operaio',
+            SL[s] || 'Non assegnato',
+            ot > 0 ? ot + 'h' : '',
+            nota
+          ]);
+        });
       }
     }
 
-    // Serializza in CSV (separatore virgola, encoding UTF-8 BOM)
-    const csv = [header, ...rows].map(r => r.map(q).join(',')).join('\r\n');
+    // Serializza con punto e virgola (Excel italiano)
+    const csv = [header, ...rows].map(r => r.map(q).join(SEP)).join('\r\n');
     const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8'});
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href = url;
-    a.download = 'planning_operai_' + (view === 'week'
-      ? fmt(addD(wkStart,0)).replace('/','') + '-' + fmt(addD(wkStart,6)).replace('/','')
-      : MIT[curMon.m] + '_' + curMon.y) + '.csv';
+    const periodo = view === 'week'
+      ? fmt(wkStart).replace('/','_') + '-' + fmt(addD(wkStart,6)).replace('/','_')
+      : MIT[curMon.m] + '_' + curMon.y;
+    a.download = 'planning_' + periodo + '.csv';
     document.body.appendChild(a);
     a.click();
     setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 800);
