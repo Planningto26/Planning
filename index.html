@@ -198,6 +198,16 @@ function persist(){
   localStorage.setItem('po_n', JSON.stringify(nots));
 }
 
+// Normalizza le chiavi degli oggetti a stringhe (fix per dati già salvati con chiavi numeriche)
+function normalizeKeys(obj){
+  const out={};
+  Object.keys(obj).forEach(k=>{ out[String(k)]=obj[k]; });
+  return out;
+}
+sched = normalizeKeys(sched);
+otime = normalizeKeys(otime);
+nots  = normalizeKeys(nots);
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // UTILITY
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -211,12 +221,12 @@ function key(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0
 function dw(d){ return d.getDay()===0?6:d.getDay()-1; }
 function h(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-function gS(wid,dk){ return (sched[wid]&&sched[wid][dk])||'OFF'; }
-function sS(wid,dk,v){ if(!sched[wid])sched[wid]={}; sched[wid][dk]=v; persist(); }
-function gO(wid,dk){ return (otime[wid]&&otime[wid][dk])||0; }
-function sO(wid,dk,v){ if(!otime[wid])otime[wid]={}; otime[wid][dk]=v; persist(); }
-function gN(wid,dk){ return (nots[wid]&&nots[wid][dk])||''; }
-function sN(wid,dk,v){ if(!nots[wid])nots[wid]={}; nots[wid][dk]=v; persist(); }
+function gS(wid,dk){ const k=String(wid); return (sched[k]&&sched[k][dk])||'OFF'; }
+function sS(wid,dk,v){ const k=String(wid); if(!sched[k])sched[k]={}; sched[k][dk]=v; persist(); }
+function gO(wid,dk){ const k=String(wid); return (otime[k]&&otime[k][dk])||0; }
+function sO(wid,dk,v){ const k=String(wid); if(!otime[k])otime[k]={}; otime[k][dk]=v; persist(); }
+function gN(wid,dk){ const k=String(wid); return (nots[k]&&nots[k][dk])||''; }
+function sN(wid,dk,v){ const k=String(wid); if(!nots[k])nots[k]={}; nots[k][dk]=v; persist(); }
 
 function toast(msg){
   const t=document.getElementById('toast'); t.textContent=msg;
