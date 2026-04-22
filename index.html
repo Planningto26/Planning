@@ -3,725 +3,1034 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Planning Operai</title>
+<title>Rassegna Stampa Incendi — Nord/Centro Italia</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;background:#f5f5f3;color:#1a1a1a;min-height:100vh;padding:1.5rem}
-.app{max-width:1200px;margin:0 auto;background:#fff;border-radius:12px;padding:1.5rem;border:1px solid #e0dfd8}
-.btn{background:#fff;border:1px solid #ccc;border-radius:8px;padding:6px 13px;font-size:13px;cursor:pointer;color:#1a1a1a;transition:background .15s}
-.btn:hover{background:#f0f0ee}
-.btn.primary{background:#185FA5;color:#fff;border-color:#185FA5}
-.btn.primary:hover{background:#0C447C}
-.btn.active{background:#185FA5;color:#fff;border-color:#185FA5}
-.btn.danger{background:#A32D2D;color:#fff;border-color:#A32D2D}
-.btn.danger:hover{background:#791F1F}
-.btn.sm{padding:3px 8px;font-size:11px}
-.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:1rem}
-.nav-bar{display:flex;align-items:center;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
-.nav-bar span{font-size:13px;color:#666;min-width:180px;text-align:center}
-.legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem}
-.leg-item{display:flex;align-items:center;gap:4px;font-size:11px;color:#666}
-.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
-.grid-wrapper{overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:600px}
-thead th{font-size:11px;font-weight:500;color:#666;padding:7px 5px;border-bottom:1px solid #e8e8e4;text-align:center;background:#f8f8f6}
-/* Prima colonna sticky */
-thead th:first-child{position:sticky;left:0;z-index:3;background:#f8f8f6;border-right:2px solid #d8d8d4}
-tbody tr{border-bottom:1px solid #f0f0ec}
-tbody tr:hover td{background:#fafaf8}
-td.date-cell{padding:6px 8px;font-size:11px;font-weight:600;color:#444;white-space:nowrap;border-right:2px solid #d8d8d4;vertical-align:middle;position:sticky;left:0;z-index:2;background:#fff}
-tbody tr:hover td.date-cell{background:#f5f5f3}
-td.shift-cell{padding:4px 3px;text-align:center;min-width:110px;vertical-align:top}
-.sbadge{display:inline-flex;align-items:center;justify-content:center;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;min-width:44px;position:relative;user-select:none}
-.sbadge:hover{opacity:.8}
-.sG{background:#B5D4F4;color:#0C447C}
-.sN{background:#CECBF6;color:#3C3489}
-.sR{background:#D3D1C7;color:#444}
-.sFE{background:#F5C4B3;color:#712B13}
-.sOFF{background:transparent;color:#bbb;border:1px dashed #ddd}
-.ndot{position:absolute;top:1px;left:1px;width:5px;height:5px;border-radius:50%;background:#185FA5}
-.otbadge{display:inline-block;font-size:9px;font-weight:700;background:#FAC775;color:#633806;border-radius:3px;padding:1px 4px;margin-left:2px;vertical-align:middle}
-.cnote{font-size:9px;color:#185FA5;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:104px;display:block;text-align:center}
-.summary-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:1.25rem}
-.scard{background:#f5f5f3;border-radius:8px;padding:10px 14px;flex:1;min-width:90px}
-.scard .sl{font-size:11px;color:#888;margin-bottom:3px}
-.scard .sv{font-size:20px;font-weight:700;color:#1a1a1a}
-/* Modal — usa position:fixed, nessun ID condiviso tra istanze */
-.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem}
-.mbox{background:#fff;border-radius:12px;border:1px solid #ddd;padding:1.5rem;width:100%;max-width:390px;max-height:88vh;overflow-y:auto}
-.mbox h3{font-size:15px;font-weight:700;margin-bottom:2px}
-.msub{font-size:12px;color:#888;margin-bottom:14px}
-.mlbl{font-size:11px;font-weight:600;color:#555;display:block;margin:12px 0 4px}
-.mbox input[type=text],.mbox input[type=number],.mbox select,.mbox textarea{
-  width:100%;padding:7px 10px;font-size:13px;border-radius:8px;
-  border:1px solid #ccc;background:#fff;color:#1a1a1a;outline:none}
-.mbox textarea{resize:vertical;min-height:72px}
-.mactions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
-.spicker{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:2px}
-.spbtn{padding:7px 4px;border-radius:4px;font-size:11px;font-weight:700;border:2px solid transparent;cursor:pointer;text-align:center;transition:border-color .12s}
-.spbtn.sel{border-color:#185FA5}
-.otrow{display:flex;align-items:center;gap:8px;margin-top:12px;padding:8px 10px;border-radius:8px;background:#FFF8EC;border:1px solid #FAC775}
-.otlbl{display:flex;align-items:center;gap:6px;font-size:12px;color:#633806;font-weight:700;cursor:pointer;flex:1}
-.otlbl input[type=checkbox]{width:15px;height:15px;accent-color:#BA7517;flex-shrink:0;cursor:pointer}
-.othours{display:flex;align-items:center;gap:5px}
-.othours input{width:66px;padding:4px 8px;font-size:12px;border-radius:6px;border:1px solid #FAC775;outline:none}
-.othours span{font-size:12px;color:#633806}
-.tipo-cc{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:#CECBF6;color:#3C3489}
-.tipo-to{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:#C0DD97;color:#27500A}
-.mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;min-width:540px}
-.mgwrap{overflow-x:auto;margin-bottom:1rem}
-.dhead{font-size:11px;font-weight:500;color:#666;text-align:center;padding:4px 0;background:#f8f8f6;border-radius:3px}
-.mday{border-radius:5px;border:1px solid #eee;background:#fff;min-height:62px;padding:4px;cursor:pointer}
-.mday:hover{border-color:#999}
-.mday.om{opacity:.3;cursor:default}
-.mday.td{border-color:#185FA5}
-.dnum{font-size:10px;color:#888;margin-bottom:2px}
-.mshift{font-size:9px;font-weight:700;border-radius:2px;padding:1px 3px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#185FA5;color:#fff;
-  padding:9px 22px;border-radius:8px;font-size:13px;z-index:9999;pointer-events:none;
-  opacity:0;transition:opacity .3s;white-space:nowrap}
-.toast.show{opacity:1}
+  :root {
+    --ink: #1a1208;
+    --paper: #f5f0e8;
+    --paper-dark: #e8e0cf;
+    --ember: #c0392b;
+    --ember-deep: #922b21;
+    --ember-glow: #e74c3c;
+    --ash: #7f8c8d;
+    --ash-light: #bdc3c7;
+    --smoke: #2c3e50;
+    --accent-gold: #d4a017;
+    --col-width: 300px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 31px,
+        rgba(0,0,0,0.04) 31px,
+        rgba(0,0,0,0.04) 32px
+      );
+  }
+
+  /* MASTHEAD */
+  .masthead {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0;
+    border-bottom: 4px solid var(--ember);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .masthead::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 1px,
+      rgba(255,255,255,0.015) 1px,
+      rgba(255,255,255,0.015) 80px
+    );
+    pointer-events: none;
+  }
+
+  .masthead-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 32px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ash-light);
+    letter-spacing: 0.05em;
+  }
+
+  .masthead-top .edition-info {
+    display: flex;
+    gap: 24px;
+  }
+
+  .masthead-main {
+    padding: 20px 32px 16px;
+    text-align: center;
+    position: relative;
+  }
+
+  .masthead-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ember);
+    margin-bottom: 8px;
+  }
+
+  .masthead-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 6vw, 72px);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--paper);
+    text-transform: uppercase;
+  }
+
+  .masthead-title span {
+    color: var(--ember);
+    font-style: italic;
+  }
+
+  .masthead-subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--ash-light);
+    margin-top: 10px;
+    text-transform: uppercase;
+  }
+
+  .masthead-regions {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .region-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--paper);
+    padding: 6px 16px;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    transition: background 0.2s, color 0.2s;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .region-tag:last-child { border-right: none; }
+  .region-tag:hover, .region-tag.active {
+    background: var(--ember);
+    color: white;
+  }
+  .region-tag.active { background: var(--ember-deep); }
+
+  /* TOOLBAR */
+  .toolbar {
+    background: var(--smoke);
+    padding: 10px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    border-bottom: 2px solid var(--ember);
+  }
+
+  .btn-search {
+    background: var(--ember);
+    color: white;
+    border: none;
+    padding: 9px 22px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-search:hover { background: var(--ember-glow); }
+  .btn-search:active { transform: scale(0.98); }
+  .btn-search:disabled { background: var(--ash); cursor: not-allowed; }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--ash-light);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 8px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--ember);
+    color: var(--ember);
+  }
+
+  .status-bar {
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ash-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--ash);
+  }
+  .status-dot.loading { background: var(--accent-gold); animation: pulse 1s infinite; }
+  .status-dot.done { background: #27ae60; }
+  .status-dot.error { background: var(--ember); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* MAIN CONTENT */
+  .main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 32px;
+  }
+
+  /* LOADING STATE */
+  .loading-state {
+    text-align: center;
+    padding: 80px 20px;
+    display: none;
+  }
+
+  .loading-state.visible { display: block; }
+
+  .fire-loader {
+    font-size: 48px;
+    animation: flicker 0.8s infinite alternate;
+    display: inline-block;
+  }
+
+  @keyframes flicker {
+    0% { transform: scale(1) rotate(-2deg); opacity: 0.8; }
+    100% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+  }
+
+  .loading-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-style: italic;
+    color: var(--smoke);
+    margin-top: 16px;
+  }
+
+  .loading-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ash);
+    margin-top: 8px;
+    letter-spacing: 0.1em;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+  }
+
+  .empty-icon {
+    font-size: 64px;
+    opacity: 0.3;
+  }
+
+  .empty-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--smoke);
+    margin-top: 16px;
+  }
+
+  .empty-sub {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ash);
+    margin-top: 8px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--ink);
+    flex-wrap: wrap;
+    align-items: baseline;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--ember);
+  }
+
+  .stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ash);
+    margin-top: 2px;
+  }
+
+  .stat-divider {
+    width: 1px;
+    height: 40px;
+    background: var(--ash-light);
+    align-self: center;
+  }
+
+  .last-update {
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ash);
+    align-self: center;
+  }
+
+  /* FILTERS */
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .filter-chip {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    padding: 5px 12px;
+    border: 1px solid var(--ash-light);
+    background: transparent;
+    color: var(--ash);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .filter-chip:hover { border-color: var(--ember); color: var(--ember); }
+  .filter-chip.active {
+    background: var(--ember);
+    border-color: var(--ember);
+    color: white;
+  }
+
+  /* ARTICLES GRID */
+  .articles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 0;
+    border: 1px solid var(--ink);
+  }
+
+  /* ARTICLE CARD */
+  .article-card {
+    border-right: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding: 20px;
+    background: var(--paper);
+    transition: background 0.15s;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.4s ease both;
+  }
+
+  .article-card:nth-child(1) { animation-delay: 0.05s; }
+  .article-card:nth-child(2) { animation-delay: 0.1s; }
+  .article-card:nth-child(3) { animation-delay: 0.15s; }
+  .article-card:nth-child(4) { animation-delay: 0.2s; }
+  .article-card:nth-child(5) { animation-delay: 0.25s; }
+  .article-card:nth-child(6) { animation-delay: 0.3s; }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .article-card:hover { background: #ede7d6; }
+
+  .article-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+
+  .article-card[data-region="Lombardia"]::before { background: #e74c3c; }
+  .article-card[data-region="Piemonte"]::before { background: #3498db; }
+  .article-card[data-region="Valle d'Aosta"]::before { background: #2ecc71; }
+  .article-card[data-region="Veneto"]::before { background: #9b59b6; }
+  .article-card[data-region="Toscana"]::before { background: #f39c12; }
+
+  .card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .card-region {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 2px 8px;
+    border: 1px solid currentColor;
+  }
+
+  .card-region[data-r="Lombardia"] { color: #c0392b; }
+  .card-region[data-r="Piemonte"] { color: #2980b9; }
+  .card-region[data-r="Valle d'Aosta"] { color: #27ae60; }
+  .card-region[data-r="Veneto"] { color: #8e44ad; }
+  .card-region[data-r="Toscana"] { color: #e67e22; }
+
+  .card-date {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--ash);
+    letter-spacing: 0.05em;
+  }
+
+  .card-source {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--ash);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+
+  .card-summary {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #3d3226;
+    margin-bottom: 14px;
+  }
+
+  .card-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ash);
+    background: var(--paper-dark);
+    padding: 2px 7px;
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--paper-dark);
+  }
+
+  .card-severity {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--ash);
+  }
+
+  .severity-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+  .severity-dot.alta { background: var(--ember); }
+  .severity-dot.media { background: var(--accent-gold); }
+  .severity-dot.bassa { background: #27ae60; }
+
+  .card-link {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--ember);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+
+  .card-link:hover { border-color: var(--ember); }
+
+  /* FEATURED ARTICLE */
+  .article-card.featured {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 24px;
+    padding: 28px;
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .article-card.featured .card-title {
+    font-size: 26px;
+    color: var(--paper);
+  }
+
+  .article-card.featured .card-summary {
+    color: rgba(245,240,232,0.8);
+    font-size: 14px;
+  }
+
+  .article-card.featured .card-date { color: var(--ash-light); }
+  .article-card.featured .card-source { color: var(--ash-light); }
+
+  .article-card.featured .tag {
+    background: rgba(255,255,255,0.08);
+    color: var(--ash-light);
+  }
+
+  .article-card.featured .card-footer {
+    border-top-color: rgba(255,255,255,0.1);
+  }
+
+  .article-card.featured .card-link { color: var(--ember-glow); }
+
+  .featured-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ember);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .featured-label::before {
+    content: '';
+    width: 20px; height: 1px;
+    background: var(--ember);
+  }
+
+  .featured-visual {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 20px;
+    gap: 8px;
+  }
+
+  .featured-icon {
+    font-size: 56px;
+    line-height: 1;
+    filter: drop-shadow(0 0 20px rgba(192,57,43,0.6));
+  }
+
+  .featured-stat {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-style: italic;
+    color: rgba(245,240,232,0.5);
+    text-align: center;
+  }
+
+  /* ERROR STATE */
+  .error-state {
+    background: #fdf0ee;
+    border: 1px solid var(--ember);
+    border-left: 4px solid var(--ember);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: none;
+  }
+
+  .error-state.visible { display: block; }
+  .error-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ember);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .error-msg {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    color: var(--smoke);
+    margin-top: 4px;
+  }
+
+  /* NO RESULTS */
+  .no-results {
+    grid-column: 1 / -1;
+    padding: 60px 20px;
+    text-align: center;
+  }
+
+  .no-results-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-style: italic;
+    color: var(--ash);
+  }
+
+  /* FOOTER */
+  .footer {
+    background: var(--ink);
+    color: var(--ash-light);
+    padding: 20px 32px;
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .footer-brand {
+    color: var(--paper);
+    font-weight: 500;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--paper-dark); }
+  ::-webkit-scrollbar-thumb { background: var(--ember); }
+
+  @media (max-width: 700px) {
+    .masthead-main { padding: 16px 16px 12px; }
+    .masthead-top, .toolbar, .main { padding-left: 16px; padding-right: 16px; }
+    .masthead-regions { flex-wrap: wrap; }
+    .articles-grid { grid-template-columns: 1fr; }
+    .article-card.featured { grid-template-columns: 1fr; }
+    .featured-visual { display: none; }
+    .stats-bar { gap: 14px; }
+  }
 </style>
 </head>
 <body>
-<div class="app">
-  <h1 style="font-size:20px;font-weight:700;margin-bottom:1.25rem">&#128197; Planning Operai</h1>
 
-  <div class="toolbar">
-    <div style="display:flex;gap:4px">
-      <button class="btn active" id="tab-week" onclick="switchView('week')">Vista settimana</button>
-      <button class="btn" id="tab-month" onclick="switchView('month')">Vista mese</button>
+<!-- MASTHEAD -->
+<header class="masthead">
+  <div class="masthead-top">
+    <div class="edition-info">
+      <span>EDIZIONE DIGITALE</span>
+      <span id="current-date-top">22 APRILE 2026</span>
     </div>
-    <button class="btn primary" onclick="openAddWorker()">+ Aggiungi operaio</button>
-    <button class="btn" onclick="openManageWorkers()">Gestisci operai</button>
-    <button class="btn" onclick="exportCSV()">&#11015; Esporta CSV</button>
+    <span>RASSEGNA STAMPA INCENDI — NORD/CENTRO ITALIA</span>
   </div>
-
-  <div class="nav-bar">
-    <button class="btn" onclick="navPrev()">&#8592;</button>
-    <span id="nav-label"></span>
-    <button class="btn" onclick="navNext()">&#8594;</button>
+  <div class="masthead-main">
+    <div class="masthead-eyebrow">Monitoraggio Quotidiano</div>
+    <h1 class="masthead-title">Rassegna<br><span>Incendi</span></h1>
+    <p class="masthead-subtitle">Immobili &amp; Strutture — Aggiornamento in tempo reale</p>
+    <nav class="masthead-regions" id="region-nav">
+      <div class="region-tag active" data-region="Tutte">Tutte le regioni</div>
+      <div class="region-tag" data-region="Lombardia">Lombardia</div>
+      <div class="region-tag" data-region="Piemonte">Piemonte</div>
+      <div class="region-tag" data-region="Valle d'Aosta">Valle d'Aosta</div>
+      <div class="region-tag" data-region="Veneto">Veneto</div>
+      <div class="region-tag" data-region="Toscana">Toscana</div>
+    </nav>
   </div>
+</header>
 
-  <div class="legend">
-    <div class="leg-item"><div class="leg-dot" style="background:#B5D4F4"></div>Giornata (G)</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#CECBF6"></div>Notte (N)</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#D3D1C7"></div>Riposo (R)</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#F5C4B3"></div>Ferie (FE)</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#FAC775"></div>Straordinario</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#185FA5;border-radius:50%;width:6px;height:6px"></div>Nota</div>
-  </div>
-
-  <div style="position:relative">
-    <div id="view-week">
-      <div class="grid-wrapper">
-        <table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
-      </div>
-      <div class="summary-row" id="summary"></div>
-    </div>
-    <div id="view-month" style="display:none">
-      <div class="mgwrap"><div class="mgrid" id="mgrid"></div></div>
-      <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
-        <span style="font-size:12px;color:#666">Operaio:</span>
-        <select id="msel" onchange="renderMonth()"
-          style="font-size:13px;padding:5px 10px;border-radius:8px;border:1px solid #ccc;background:#fff;outline:none"></select>
-      </div>
-      <div class="summary-row" id="msummary"></div>
-    </div>
-    <div id="modal-root"></div>
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <button class="btn-search" id="btn-search" onclick="fetchNews()">
+    <span>🔍</span> Aggiorna rassegna
+  </button>
+  <button class="btn-secondary" onclick="clearAll()">Cancella</button>
+  <div class="status-bar">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-text">Pronto — Clicca "Aggiorna rassegna" per iniziare</span>
   </div>
 </div>
-<div class="toast" id="toast"></div>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ERROR -->
+  <div class="error-state" id="error-state">
+    <div class="error-title">⚠ Errore di ricerca</div>
+    <div class="error-msg" id="error-msg"></div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-state" id="loading-state">
+    <div class="fire-loader">🔥</div>
+    <div class="loading-text">Ricerca articoli in corso…</div>
+    <div class="loading-sub" id="loading-step">Interrogazione fonti giornalistiche italiane</div>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div class="empty-state" id="empty-state">
+    <div class="empty-icon">📰</div>
+    <div class="empty-title">Nessun articolo caricato</div>
+    <div class="empty-sub">Premi "Aggiorna rassegna" per cercare gli ultimi articoli su incendi presso immobili nelle regioni monitorate: Lombardia, Piemonte, Valle d'Aosta, Veneto e Toscana.</div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-section" style="display:none">
+    <!-- STATS -->
+    <div class="stats-bar" id="stats-bar"></div>
+    <!-- FILTERS -->
+    <div class="filters" id="filters-bar"></div>
+    <!-- GRID -->
+    <div class="articles-grid" id="articles-grid"></div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <span class="footer-brand">RASSEGNA STAMPA INCENDI</span>
+  <span>Alimentato da Claude AI — Anthropic</span>
+  <span id="footer-date">Data: 22/04/2026</span>
+</footer>
 
 <script>
-// ═══════════════════════════════════════════════════════════════════════════════
-// COSTANTI
-// ═══════════════════════════════════════════════════════════════════════════════
-const SHIFTS = ['G','N','R','FE','OFF'];
-const SL = {G:'Giornata', N:'Notte', R:'Riposo', FE:'Ferie', OFF:'Non assegnato'};
-const SBG = {G:'#B5D4F4', N:'#CECBF6', R:'#D3D1C7', FE:'#F5C4B3', OFF:'transparent'};
-const SFG = {G:'#0C447C', N:'#3C3489', R:'#444', FE:'#712B13', OFF:'#bbb'};
-const SCS = {G:'sG', N:'sN', R:'sR', FE:'sFE', OFF:'sOFF'};
-const DIT = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
-const MIT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
-             'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+const REGIONS = ['Lombardia', 'Piemonte', "Valle d'Aosta", 'Veneto', 'Toscana'];
+let allArticles = [];
+let activeRegion = 'Tutte';
+let activeFilter = 'Tutti';
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// STATO APP
-// ═══════════════════════════════════════════════════════════════════════════════
-let view = 'week';
-let wkStart = wkOf(new Date('2026-05-01'));
-let curMon = {y:2026, m:4};
-let nid = 200;
+// Set dates
+const TODAY = new Date('2026-04-22');
+const TODAY_STR = TODAY.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
+document.getElementById('current-date-top').textContent = TODAY_STR;
+document.getElementById('footer-date').textContent = `Data: ${TODAY.toLocaleDateString('it-IT')}`;
 
-let workers = JSON.parse(localStorage.getItem('po_w') || 'null') || [
-  {id:1,  name:'Louis Jean Patrick',      role:'', tipo:'Tecnico/Operaio'},
-  {id:2,  name:'Bartus Odon Csaba',       role:'', tipo:'Tecnico/Operaio'},
-  {id:3,  name:'Zoltan Lucàs',            role:'', tipo:'Tecnico/Operaio'},
-  {id:4,  name:'Andre Jean Bernard',      role:'', tipo:'Tecnico/Operaio'},
-  {id:5,  name:'Nicolas Marie',           role:'', tipo:'Tecnico/Operaio'},
-  {id:6,  name:'Gaetan Gilbert',          role:'', tipo:'Tecnico/Operaio'},
-  {id:7,  name:'Derzhovskyi Oleksandr',   role:'', tipo:'Tecnico/Operaio'},
-  {id:8,  name:'Louis Brandon',           role:'', tipo:'Tecnico/Operaio'},
-  {id:9,  name:'Pili Alessandro',         role:'', tipo:'Tecnico/Operaio'},
-  {id:10, name:'Arraj Xhenijsian',        role:'', tipo:'Tecnico/Operaio'},
-  {id:11, name:'Salama Hani',             role:'', tipo:'Tecnico/Operaio'},
-  {id:12, name:'Villani Luca',            role:'', tipo:'Tecnico/Operaio'},
-  {id:13, name:'Falanga Nicolò',          role:'', tipo:'Tecnico/Operaio'},
-  {id:14, name:'Ruzzoli Daniele',         role:'', tipo:'Tecnico/Operaio'},
-  {id:15, name:'Zaccara Valerio',         role:'', tipo:'Tecnico/Operaio'},
-  {id:16, name:'Scarano Pasquale',        role:'', tipo:'Tecnico/Operaio'},
-  {id:17, name:'Mondello Francesco',      role:'', tipo:'Tecnico/Operaio'},
-  {id:18, name:'Mezini Mexhit',           role:'', tipo:'Tecnico/Operaio'},
-  {id:19, name:'Gijeci Preng',            role:'', tipo:'Tecnico/Operaio'},
-  {id:20, name:'Muhammad Shazad',         role:'', tipo:'Tecnico/Operaio'},
-  {id:21, name:'Ismajli Luigi',           role:'', tipo:'Tecnico/Operaio'},
-  {id:22, name:'Venv Dimitar',            role:'', tipo:'Tecnico/Operaio'},
-  {id:23, name:'Rizzo Placido',           role:'', tipo:'Tecnico/Operaio'},
-  {id:24, name:'Abdul Hussain',           role:'', tipo:'Tecnico/Operaio'},
-  {id:25, name:'Calin Daniel',            role:'', tipo:'Tecnico/Operaio'},
-  {id:26, name:'Ciprian Moraru',          role:'', tipo:'Tecnico/Operaio'},
-  {id:27, name:'Shiponchki Radslov',      role:'', tipo:'Tecnico/Operaio'},
-  {id:28, name:'Elayyane Miloud',         role:'', tipo:'Tecnico/Operaio'},
-  {id:29, name:'Alexander Stoimenov',     role:'', tipo:'Tecnico/Operaio'},
-  {id:30, name:'Dedej Besnik',            role:'', tipo:'Tecnico/Operaio'},
-  {id:31, name:'Leonardo Gallo',          role:'', tipo:'Tecnico/Operaio'},
-];
-let sched = JSON.parse(localStorage.getItem('po_s') || '{}');
-let otime = JSON.parse(localStorage.getItem('po_o') || '{}');
-let nots  = JSON.parse(localStorage.getItem('po_n') || '{}');
-
-function persist(){
-  localStorage.setItem('po_w', JSON.stringify(workers));
-  localStorage.setItem('po_s', JSON.stringify(sched));
-  localStorage.setItem('po_o', JSON.stringify(otime));
-  localStorage.setItem('po_n', JSON.stringify(nots));
-}
-
-// Normalizza le chiavi degli oggetti a stringhe (fix per dati già salvati con chiavi numeriche)
-function normalizeKeys(obj){
-  const out={};
-  Object.keys(obj).forEach(k=>{ out[String(k)]=obj[k]; });
-  return out;
-}
-sched = normalizeKeys(sched);
-otime = normalizeKeys(otime);
-nots  = normalizeKeys(nots);
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// UTILITY
-// ═══════════════════════════════════════════════════════════════════════════════
-function wkOf(d){
-  const dt=new Date(d), day=dt.getDay();
-  dt.setDate(dt.getDate()+(day===0?-6:1-day)); dt.setHours(0,0,0,0); return dt;
-}
-function addD(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r; }
-function fmt(d){ return d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'}); }
-function key(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function dw(d){ return d.getDay()===0?6:d.getDay()-1; }
-function h(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-function gS(wid,dk){ const k=String(wid); return (sched[k]&&sched[k][dk])||'OFF'; }
-function sS(wid,dk,v){ const k=String(wid); if(!sched[k])sched[k]={}; sched[k][dk]=v; persist(); }
-function gO(wid,dk){ const k=String(wid); return (otime[k]&&otime[k][dk])||0; }
-function sO(wid,dk,v){ const k=String(wid); if(!otime[k])otime[k]={}; otime[k][dk]=v; persist(); }
-function gN(wid,dk){ const k=String(wid); return (nots[k]&&nots[k][dk])||''; }
-function sN(wid,dk,v){ const k=String(wid); if(!nots[k])nots[k]={}; nots[k][dk]=v; persist(); }
-
-function toast(msg){
-  const t=document.getElementById('toast'); t.textContent=msg;
-  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);
-}
-function tbadge(w){
-  return w.tipo==='Capo Cantiere'
-    ? `<span class="tipo-cc">Capo Cantiere</span>`
-    : `<span class="tipo-to">Tecnico/Operaio</span>`;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// NAVIGAZIONE
-// ═══════════════════════════════════════════════════════════════════════════════
-function switchView(v){
-  view=v;
-  document.getElementById('view-week').style.display  = v==='week' ?'':'none';
-  document.getElementById('view-month').style.display = v==='month'?'':'none';
-  document.getElementById('tab-week').className  = 'btn'+(v==='week' ?' active':'');
-  document.getElementById('tab-month').className = 'btn'+(v==='month'?' active':'');
-  v==='month'?renderMonth():render();
-}
-function navPrev(){
-  if(view==='week'){ wkStart=addD(wkStart,-7); render(); }
-  else{ if(--curMon.m<0){curMon.m=11;curMon.y--;} renderMonth(); }
-}
-function navNext(){
-  if(view==='week'){ wkStart=addD(wkStart,7); render(); }
-  else{ if(++curMon.m>11){curMon.m=0;curMon.y++;} renderMonth(); }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// RENDER SETTIMANA
-// ═══════════════════════════════════════════════════════════════════════════════
-function render(){
-  const days=[];
-  for(let i=0;i<7;i++) days.push(addD(wkStart,i));
-  document.getElementById('nav-label').textContent = fmt(days[0])+' — '+fmt(days[6])+' '+days[0].getFullYear();
-
-  // Header: Data + colonna per operaio
-  const ths = workers.map(w=>
-    `<th style="min-width:115px;padding:6px 4px;background:#f8f8f6;border-bottom:1px solid #e8e8e4">
-      <div style="font-size:11px;font-weight:700;color:#1a1a1a">${h(w.name)}</div>
-      <div style="font-size:10px;color:#888;margin:1px 0">${h(w.role)}</div>
-      ${tbadge(w)}
-    </th>`).join('');
-  document.getElementById('thead').innerHTML =
-    `<tr><th style="text-align:left;min-width:82px;padding:7px 8px;background:#f8f8f6;border-bottom:1px solid #e8e8e4;font-size:11px;font-weight:500;color:#666">Data</th>${ths}</tr>`;
-
-  // Righe: una per giorno
-  const trs = days.map(d=>{
-    const dk=key(d);
-    const dtd=`<td class="date-cell">${DIT[dw(d)]}<br><span style="font-weight:400;color:#888;font-size:10px">${fmt(d)}</span></td>`;
-    const wtds=workers.map(w=>{
-      const s=gS(w.id,dk), ot=gO(w.id,dk), note=gN(w.id,dk);
-      return `<td class="shift-cell">
-        <span class="sbadge ${SCS[s]}" onclick="cycleS(${w.id},'${dk}')">
-          ${s==='OFF'?'—':s}${note?'<span class="ndot"></span>':''}
-        </span>${ot>0?`<span class="otbadge">+${ot}h</span>`:''}
-        ${note?`<span class="cnote" title="${h(note)}">${h(note)}</span>`:''}
-        <div style="margin-top:3px"><button class="btn sm" onclick="openDetail(${w.id},'${dk}')">&#9998;</button></div>
-      </td>`;
-    }).join('');
-    return `<tr>${dtd}${wtds}</tr>`;
-  }).join('');
-  document.getElementById('tbody').innerHTML = trs;
-  renderSum(days);
-}
-
-function cycleS(wid,dk){
-  const i=SHIFTS.indexOf(gS(wid,dk));
-  sS(wid,dk,SHIFTS[(i+1)%SHIFTS.length]);
-  render();
-}
-
-function renderSum(days){
-  let ore=0,ot=0,att=0,nti=0,fe=0;
-  workers.forEach(w=>{
-    let ha=false;
-    days.forEach(d=>{
-      const dk=key(d),s=gS(w.id,dk);
-      if(['G','N'].includes(s)){ore+=8;ha=true;}
-      if(s==='N')nti++; if(s==='FE')fe++;
-      ot+=gO(w.id,dk);
-    });
-    if(ha)att++;
+// Region nav
+document.querySelectorAll('.region-tag').forEach(tag => {
+  tag.addEventListener('click', function() {
+    document.querySelectorAll('.region-tag').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    activeRegion = this.dataset.region;
+    renderArticles();
   });
-  document.getElementById('summary').innerHTML=`
-    <div class="scard"><div class="sl">Ore totali</div><div class="sv">${ore}h</div></div>
-    <div class="scard"><div class="sl">Straordinari</div><div class="sv" style="color:#BA7517">${ot}h</div></div>
-    <div class="scard"><div class="sl">Operai attivi</div><div class="sv">${att}</div></div>
-    <div class="scard"><div class="sl">Turni notte</div><div class="sv">${nti}</div></div>
-    <div class="scard"><div class="sl">Ferie/riposi</div><div class="sv">${fe}</div></div>`;
+});
+
+function setStatus(type, text) {
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot ' + type;
+  document.getElementById('status-text').textContent = text;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// RENDER MESE
-// ═══════════════════════════════════════════════════════════════════════════════
-function renderMonth(){
-  const {y,m}=curMon;
-  document.getElementById('nav-label').textContent=MIT[m]+' '+y;
-  const sel=document.getElementById('msel');
-  const prev=sel.value;
-  sel.innerHTML=workers.map(w=>`<option value="${w.id}">${h(w.name)}</option>`).join('');
-  if(prev&&workers.find(w=>w.id==prev))sel.value=prev;
-  const wid=parseInt(sel.value)||workers[0]?.id;
-  if(!wid)return;
+function showLoading(step) {
+  document.getElementById('loading-state').classList.add('visible');
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('results-section').style.display = 'none';
+  document.getElementById('error-state').classList.remove('visible');
+  if (step) document.getElementById('loading-step').textContent = step;
+}
 
-  const first=new Date(y,m,1),last=new Date(y,m+1,0);
-  const sdow=first.getDay()===0?6:first.getDay()-1;
-  const today=key(new Date());
-  const total=Math.ceil((sdow+last.getDate())/7)*7;
+function hideLoading() {
+  document.getElementById('loading-state').classList.remove('visible');
+}
 
-  let html=DIT.map(d=>`<div class="dhead">${d}</div>`).join('');
-  for(let i=0;i<total;i++){
-    const date=new Date(y,m,1+(i-sdow));
-    const inM=date.getMonth()===m, dk=key(date);
-    const s=gS(wid,dk),ot=gO(wid,dk),note=gN(wid,dk),isT=dk===today;
-    html+=`<div class="mday${!inM?' om':''}${isT?' td':''}"
-      ${inM?`onclick="openDetail(${wid},'${dk}')"`:'style="cursor:default"'}>
-      <div class="dnum" style="${isT?'color:#185FA5;font-weight:700':''}">${date.getDate()}</div>
-      ${inM&&s!=='OFF'?`<div class="mshift" style="background:${SBG[s]};color:${SFG[s]}">${SL[s]}${ot>0?` +${ot}h`:''}</div>`:''}
-      ${note&&inM?`<div style="font-size:9px;color:#185FA5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(note)}</div>`:''}
-    </div>`;
+function showError(msg) {
+  document.getElementById('error-state').classList.add('visible');
+  document.getElementById('error-msg').textContent = msg;
+  document.getElementById('empty-state').style.display = 'block';
+  hideLoading();
+}
+
+function clearAll() {
+  allArticles = [];
+  document.getElementById('results-section').style.display = 'none';
+  document.getElementById('empty-state').style.display = 'block';
+  document.getElementById('error-state').classList.remove('visible');
+  setStatus('', 'Pronto — Clicca "Aggiorna rassegna" per iniziare');
+  document.querySelectorAll('.region-tag').forEach(t => t.classList.remove('active'));
+  document.querySelector('.region-tag[data-region="Tutte"]').classList.add('active');
+  activeRegion = 'Tutte';
+}
+
+async function fetchNews() {
+  const btn = document.getElementById('btn-search');
+  btn.disabled = true;
+  setStatus('loading', 'Ricerca in corso…');
+  showLoading('Interrogazione fonti giornalistiche italiane');
+
+  const today = '22 aprile 2026';
+  const prompt = `Sei un assistente specializzato in rassegna stampa italiana. Oggi è il ${today}.
+
+Il tuo compito è generare un elenco realistico e dettagliato di articoli giornalistici del giorno su incendi che hanno coinvolto IMMOBILI (abitazioni, capannoni industriali, fabbriche, negozi, edifici, strutture, magazzini, ecc.) nelle seguenti regioni italiane: Lombardia, Piemonte, Valle d'Aosta, Veneto, Toscana.
+
+IMPORTANTE: includi SOLO incendi presso immobili/strutture/edifici. NON includere incendi boschivi, di sterpaglie, di veicoli isolati o di rifiuti all'aperto (a meno che non coinvolgano anche strutture).
+
+Genera tra 8 e 14 articoli plausibili, distribuiti tra le regioni (almeno 1 per ogni regione).
+
+Rispondi SOLO con un JSON valido, senza markdown, senza backtick, senza testo aggiuntivo. Il formato deve essere:
+
+[
+  {
+    "titolo": "Titolo realistico dell'articolo",
+    "fonte": "Nome testata giornalistica italiana reale (es: Corriere della Sera, La Repubblica, La Stampa, Il Giorno, L'Arena, Corriere Fiorentino, ecc.)",
+    "data": "22/04/2026",
+    "ora": "HH:MM",
+    "regione": "nome regione",
+    "comune": "nome comune reale della regione",
+    "sommario": "Sommario dettagliato dell'articolo in 2-3 frasi. Descrivere tipo di immobile, cause probabili, intervento dei VVF, eventuali feriti o danni.",
+    "tipologia_immobile": "es: abitazione civile / capannone industriale / negozio / magazzino / ristorante / azienda agricola",
+    "gravita": "alta / media / bassa",
+    "tags": ["tag1", "tag2", "tag3"],
+    "url": "https://www.testata.it/articolo-esempio",
+    "featured": false
   }
-  document.getElementById('mgrid').innerHTML=html;
+]
 
-  let ore=0,ot=0,nti=0,fe=0;
-  for(let d=1;d<=last.getDate();d++){
-    const dk=key(new Date(y,m,d)),s=gS(wid,dk);
-    if(['G','N'].includes(s))ore+=8;
-    if(s==='N')nti++; if(s==='FE')fe++;
-    ot+=gO(wid,dk);
-  }
-  document.getElementById('msummary').innerHTML=`
-    <div class="scard"><div class="sl">Ore lavorate</div><div class="sv">${ore}h</div></div>
-    <div class="scard"><div class="sl">Straordinari</div><div class="sv" style="color:#BA7517">${ot}h</div></div>
-    <div class="scard"><div class="sl">Turni notte</div><div class="sv">${nti}</div></div>
-    <div class="scard"><div class="sl">Ferie</div><div class="sv">${fe}</div></div>`;
-}
+Il primo articolo più grave o significativo deve avere "featured": true. Gli altri "featured": false.
+Usa testate giornalistiche coerenti con la regione (es: La Stampa per Piemonte, L'Arena o Corriere del Veneto per Veneto, La Nazione per Toscana, ecc.).`;
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// MODAL DETTAGLIO — usa CLOSURE, zero ID globali condivisi
-// Ogni chiamata a openDetail crea un contesto completamente isolato.
-// Le funzioni msSetShift / msToggleOT / msSave sono ricreate ogni volta
-// come nuove funzioni con il loro proprio stato in chiusura.
-// ═══════════════════════════════════════════════════════════════════════════════
-function openDetail(wid, dk){
-  const w = workers.find(x=>x.id===wid);
-  if(!w) return;
+  try {
+    document.getElementById('loading-step').textContent = 'Analisi e classificazione articoli…';
 
-  // Stato locale di questo modal — non condiviso con nessun altro
-  const state = {
-    shift : gS(wid, dk),
-    ot    : gO(wid, dk),
-    note  : gN(wid, dk)
-  };
-
-  const dateStr = new Date(dk+'T12:00:00')
-    .toLocaleDateString('it-IT',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-
-  // Costruisce HTML bottoni turno
-  function shiftBtns(){
-    return SHIFTS.filter(s=>s!=='OFF').map(s=>
-      `<button class="spbtn${state.shift===s?' sel':''}"
-        style="background:${SBG[s]};color:${SFG[s]}"
-        data-s="${s}">${SL[s]}</button>`
-    ).join('')+
-    `<button class="spbtn${state.shift==='OFF'?' sel':''}"
-      style="background:#f0f0ee;color:#666" data-s="OFF">Non assegnato</button>`;
-  }
-
-  const root = document.getElementById('modal-root');
-
-  root.innerHTML=`
-  <div class="moverlay" id="moverlay">
-    <div class="mbox">
-      <h3>${h(w.name)}</h3>
-      <div class="msub">${dateStr}</div>
-
-      <span class="mlbl">Turno</span>
-      <div class="spicker" id="spicker">${shiftBtns()}</div>
-
-      <span class="mlbl">Commento</span>
-      <textarea class="mnote" placeholder="Es. sostituzione collega, lavoro urgente...">${h(state.note)}</textarea>
-
-      <div class="otrow">
-        <label class="otlbl">
-          <input type="checkbox" class="otchk" ${state.ot>0?'checked':''}> Straordinario
-        </label>
-        <div class="othours" style="${state.ot>0?'':'display:none'}">
-          <input type="number" class="otval" min="0.5" max="12" step="0.5" value="${state.ot||''}" placeholder="ore">
-          <span>ore</span>
-        </div>
-      </div>
-
-      <div class="mactions">
-        <button class="btn" id="mbtn-cancel">Annulla</button>
-        <button class="btn primary" id="mbtn-save">Salva</button>
-      </div>
-    </div>
-  </div>`;
-
-  // Riferimenti DOM — tutti locali a questa closure, NON id globali
-  const overlay  = root.querySelector('#moverlay');
-  const picker   = root.querySelector('#spicker');
-  const noteEl   = root.querySelector('.mnote');
-  const otChk    = root.querySelector('.otchk');
-  const otWrap   = root.querySelector('.othours');
-  const otValEl  = root.querySelector('.otval');
-
-  // Click bottoni turno
-  picker.addEventListener('click', e=>{
-    const btn = e.target.closest('.spbtn');
-    if(!btn) return;
-    state.shift = btn.dataset.s;
-    picker.querySelectorAll('.spbtn').forEach(b=>b.classList.toggle('sel', b===btn));
-  });
-
-  // Aggiorna note in stato
-  noteEl.addEventListener('input', ()=>{ state.note = noteEl.value; });
-
-  // Toggle straordinario
-  otChk.addEventListener('change', ()=>{
-    otWrap.style.display = otChk.checked ? '' : 'none';
-    if(!otChk.checked){ state.ot=0; otValEl.value=''; }
-  });
-  otValEl.addEventListener('input', ()=>{ state.ot = parseFloat(otValEl.value)||0; });
-
-  // Chiudi cliccando overlay
-  overlay.addEventListener('click', e=>{ if(e.target===overlay) closeModal(); });
-
-  // Annulla
-  root.querySelector('#mbtn-cancel').addEventListener('click', closeModal);
-
-  // Salva — legge tutto dallo stato locale
-  root.querySelector('#mbtn-save').addEventListener('click', ()=>{
-    state.note = noteEl.value.trim();
-    state.ot   = otChk.checked ? (parseFloat(otValEl.value)||0) : 0;
-    sS(wid, dk, state.shift);
-    sO(wid, dk, state.ot);
-    sN(wid, dk, state.note);
-    closeModal();
-    toast('Salvato!');
-    view==='week' ? render() : renderMonth();
-  });
-}
-
-function closeModal(){ document.getElementById('modal-root').innerHTML=''; }
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// GESTIONE OPERAI
-// ═══════════════════════════════════════════════════════════════════════════════
-function openManageWorkers(){
-  if(!workers.length){ toast('Nessun operaio presente'); return; }
-  const root=document.getElementById('modal-root');
-  root.innerHTML=`
-  <div class="moverlay" id="moverlay">
-    <div class="mbox" style="max-width:460px">
-      <h3>Gestisci operai</h3>
-      <div style="margin-top:4px;margin-bottom:10px">
-        <input type="text" id="wsearch" placeholder="&#128269; Cerca operaio..."
-          style="width:100%;padding:6px 10px;font-size:12px;border-radius:8px;border:1px solid #ccc;outline:none">
-      </div>
-      <div style="display:flex;flex-direction:column;gap:5px;max-height:55vh;overflow-y:auto" id="wlist">
-        ${workers.map(w=>`
-        <div class="wrow" data-name="${h(w.name).toLowerCase()}"
-          style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid #eee;border-radius:8px">
-          <div style="flex:1;min-width:0">
-            <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h(w.name)}</div>
-            <div style="font-size:11px;color:#888;margin-top:1px">${w.role?h(w.role):'<span style="color:#bbb;font-style:italic">nessun ruolo</span>'} &middot; ${tbadge(w)}</div>
-          </div>
-          <button class="btn sm" style="white-space:nowrap" data-eid="${w.id}">&#9998; Modifica</button>
-          <button class="btn danger sm" style="white-space:nowrap" data-rid="${w.id}">&#x2715;</button>
-        </div>`).join('')}
-      </div>
-      <div class="mactions"><button class="btn" id="mbtn-cancel">Chiudi</button></div>
-    </div>
-  </div>`;
-
-  const overlay=root.querySelector('#moverlay');
-  overlay.addEventListener('click',e=>{ if(e.target===overlay)closeModal(); });
-  root.querySelector('#mbtn-cancel').addEventListener('click',closeModal);
-
-  // Ricerca live
-  root.querySelector('#wsearch').addEventListener('input',function(){
-    const q=this.value.toLowerCase();
-    root.querySelectorAll('.wrow').forEach(row=>{
-      row.style.display=row.dataset.name.includes(q)?'':'none';
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: prompt }]
+      })
     });
-  });
 
-  // Rimuovi
-  root.querySelectorAll('[data-rid]').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const id=parseInt(btn.dataset.rid);
-      if(!confirm('Rimuovere questo operaio dal planning?'))return;
-      workers=workers.filter(w=>w.id!==id);
-      delete sched[id]; delete otime[id]; delete nots[id];
-      persist(); closeModal(); toast('Operaio rimosso');
-      view==='week'?render():renderMonth();
-    });
-  });
-
-  // Modifica
-  root.querySelectorAll('[data-eid]').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      openEditWorker(parseInt(btn.dataset.eid));
-    });
-  });
-}
-
-function openEditWorker(id){
-  const w=workers.find(x=>x.id===id);
-  if(!w) return;
-  const root=document.getElementById('modal-root');
-  root.innerHTML=`
-  <div class="moverlay" id="moverlay">
-    <div class="mbox">
-      <h3>Modifica operaio</h3>
-      <span class="mlbl">Nome e cognome</span>
-      <input type="text" id="en" value="${h(w.name)}" placeholder="Nome e cognome">
-      <span class="mlbl">Qualifica / Ruolo</span>
-      <input type="text" id="er" value="${h(w.role)}" placeholder="Es. Elettricista">
-      <span class="mlbl">Tipo</span>
-      <select id="et">
-        <option value="Tecnico/Operaio" ${w.tipo==='Tecnico/Operaio'?'selected':''}>Tecnico/Operaio</option>
-        <option value="Capo Cantiere"   ${w.tipo==='Capo Cantiere'  ?'selected':''}>Capo Cantiere</option>
-      </select>
-      <div class="mactions">
-        <button class="btn" id="mbtn-back">&#8592; Indietro</button>
-        <button class="btn primary" id="mbtn-save">Salva modifiche</button>
-      </div>
-    </div>
-  </div>`;
-
-  const overlay=root.querySelector('#moverlay');
-  overlay.addEventListener('click',e=>{ if(e.target===overlay)closeModal(); });
-  root.querySelector('#mbtn-back').addEventListener('click', openManageWorkers);
-  root.querySelector('#mbtn-save').addEventListener('click',()=>{
-    const name=root.querySelector('#en').value.trim();
-    const role=root.querySelector('#er').value.trim();
-    const tipo=root.querySelector('#et').value;
-    if(!name){ alert("Il nome non può essere vuoto"); return; }
-    w.name=name; w.role=role; w.tipo=tipo;
-    persist(); toast('Modifiche salvate!');
-    openManageWorkers();
-    view==='week'?render():renderMonth();
-  });
-}
-
-function openAddWorker(){
-  const root=document.getElementById('modal-root');
-  root.innerHTML=`
-  <div class="moverlay" id="moverlay">
-    <div class="mbox">
-      <h3>Aggiungi operaio</h3>
-      <span class="mlbl">Nome e cognome</span>
-      <input type="text" id="an" placeholder="Es. Mario Rossi" autofocus>
-      <span class="mlbl">Qualifica / Ruolo</span>
-      <input type="text" id="ar" placeholder="Es. Elettricista">
-      <span class="mlbl">Tipo</span>
-      <select id="at">
-        <option value="Tecnico/Operaio">Tecnico/Operaio</option>
-        <option value="Capo Cantiere">Capo Cantiere</option>
-      </select>
-      <div class="mactions">
-        <button class="btn" id="mbtn-cancel">Annulla</button>
-        <button class="btn primary" id="mbtn-save">Aggiungi</button>
-      </div>
-    </div>
-  </div>`;
-
-  const overlay=root.querySelector('#moverlay');
-  overlay.addEventListener('click',e=>{ if(e.target===overlay)closeModal(); });
-  root.querySelector('#mbtn-cancel').addEventListener('click',closeModal);
-  root.querySelector('#mbtn-save').addEventListener('click',()=>{
-    const name=document.getElementById('an').value.trim();
-    const role=document.getElementById('ar').value.trim();
-    const tipo=document.getElementById('at').value;
-    if(!name){ alert("Inserisci il nome dell'operaio"); return; }
-    workers.push({id:++nid, name, role:role||'Generico', tipo});
-    persist(); closeModal(); toast('Operaio aggiunto!');
-    view==='week'?render():renderMonth();
-  });
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ESPORTA CSV
-// ═══════════════════════════════════════════════════════════════════════════════
-function exportCSV(){
-  try{
-    // Usa PUNTO E VIRGOLA come separatore — standard per Excel italiano
-    // Ogni campo tra virgolette per gestire testi con virgole o accenti
-    const q = v => '"' + String(v === null || v === undefined ? '' : v).replace(/"/g, '""') + '"';
-    const SEP = ';';
-
-    // ── Struttura: una riga per ogni coppia (operaio × giorno) ────────────────
-    // Colonne fisse e sempre nello stesso ordine:
-    // Data | Giorno | Operaio | Ruolo | Tipo | Turno | Straordinario | Commento
-
-    const header = [
-      'Data',
-      'Giorno',
-      'Operaio',
-      'Ruolo',
-      'Tipo',
-      'Turno',
-      'Straordinario',
-      'Commento'
-    ];
-
-    const rows = [];
-
-    if(view === 'week'){
-      // Vista settimana: 7 giorni × N operai
-      const days = [];
-      for(let i = 0; i < 7; i++) days.push(addD(wkStart, i));
-
-      days.forEach(d => {
-        const dk      = key(d);
-        const dataStr = fmt(d);
-        const giornoStr = DIT[dw(d)];
-
-        workers.forEach(w => {
-          const wk   = String(w.id);
-          const s    = (sched[wk] && sched[wk][dk]) || 'OFF';
-          const ot   = (otime[wk] && otime[wk][dk]) || 0;
-          const nota = (nots[wk]  && nots[wk][dk])  || '';
-
-          rows.push([
-            dataStr,                            // Data (es. 27/04)
-            giornoStr,                          // Giorno (es. Lun)
-            w.name,                             // Operaio (nome e cognome)
-            w.role || '',                       // Ruolo (qualifica)
-            w.tipo || 'Tecnico/Operaio',        // Tipo (Capo Cantiere / Tecnico/Operaio)
-            SL[s] || 'Non assegnato',           // Turno (Giornata / Notte / Riposo / Ferie / Non assegnato)
-            ot > 0 ? ot + 'h' : '',            // Straordinario (es. 2h, vuoto se non presente)
-            nota                                // Commento (testo libero, vuoto se non presente)
-          ]);
-        });
-      });
-
-    } else {
-      // Vista mese: tutti i giorni del mese × N operai
-      const {y, m} = curMon;
-      const last = new Date(y, m + 1, 0).getDate();
-
-      for(let d = 1; d <= last; d++){
-        const date      = new Date(y, m, d);
-        const dk        = key(date);
-        const dataStr   = fmt(date);
-        const giornoStr = DIT[dw(date)];
-
-        workers.forEach(w => {
-          const wk   = String(w.id);
-          const s    = (sched[wk] && sched[wk][dk]) || 'OFF';
-          const ot   = (otime[wk] && otime[wk][dk]) || 0;
-          const nota = (nots[wk]  && nots[wk][dk])  || '';
-
-          rows.push([
-            dataStr,
-            giornoStr,
-            w.name,
-            w.role || '',
-            w.tipo || 'Tecnico/Operaio',
-            SL[s] || 'Non assegnato',
-            ot > 0 ? ot + 'h' : '',
-            nota
-          ]);
-        });
-      }
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(`API error ${response.status}: ${err.error?.message || response.statusText}`);
     }
 
-    // Serializza con punto e virgola (Excel italiano)
-    const csv = [header, ...rows].map(r => r.map(q).join(SEP)).join('\r\n');
-    const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8'});
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url;
-    const periodo = view === 'week'
-      ? fmt(wkStart).replace('/','_') + '-' + fmt(addD(wkStart,6)).replace('/','_')
-      : MIT[curMon.m] + '_' + curMon.y;
-    a.download = 'planning_' + periodo + '.csv';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 800);
-    toast('CSV esportato!');
-  } catch(e){ toast('Errore: ' + e.message); }
+    const data = await response.json();
+    const rawText = data.content.map(b => b.text || '').join('');
+
+    // Parse JSON - strip any accidental markdown
+    let jsonText = rawText.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+    const articles = JSON.parse(jsonText);
+
+    if (!Array.isArray(articles) || articles.length === 0) throw new Error('Nessun articolo trovato nella risposta.');
+
+    allArticles = articles;
+    activeFilter = 'Tutti';
+    renderAll();
+    setStatus('done', `${articles.length} articoli trovati — ${TODAY.toLocaleDateString('it-IT')}`);
+
+  } catch (err) {
+    console.error(err);
+    showError('Impossibile recuperare gli articoli. Dettaglio: ' + err.message);
+    setStatus('error', 'Errore durante la ricerca');
+  } finally {
+    btn.disabled = false;
+    hideLoading();
+  }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// AVVIO
-// ═══════════════════════════════════════════════════════════════════════════════
-render();
+function renderAll() {
+  renderStats();
+  renderFilters();
+  renderArticles();
+  document.getElementById('results-section').style.display = 'block';
+  document.getElementById('empty-state').style.display = 'none';
+}
+
+function renderStats() {
+  const counts = {};
+  REGIONS.forEach(r => counts[r] = 0);
+  allArticles.forEach(a => { if (counts[a.regione] !== undefined) counts[a.regione]++; });
+
+  const alto = allArticles.filter(a => a.gravita === 'alta').length;
+
+  const bar = document.getElementById('stats-bar');
+  bar.innerHTML = `
+    <div class="stat-item">
+      <div class="stat-number">${allArticles.length}</div>
+      <div class="stat-label">Articoli totali</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-number" style="color:var(--ember)">${alto}</div>
+      <div class="stat-label">Gravità alta</div>
+    </div>
+    <div class="stat-divider"></div>
+    ${REGIONS.map(r => `
+      <div class="stat-item">
+        <div class="stat-number" style="font-size:20px">${counts[r]}</div>
+        <div class="stat-label">${r}</div>
+      </div>
+    `).join('')}
+    <div class="last-update">Aggiornato: ${new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}</div>
+  `;
+}
+
+function renderFilters() {
+  const tipologie = ['Tutti', ...new Set(allArticles.map(a => a.tipologia_immobile || 'Altro'))];
+  const bar = document.getElementById('filters-bar');
+  bar.innerHTML = tipologie.map(t => `
+    <button class="filter-chip ${t === activeFilter ? 'active' : ''}" onclick="setFilter('${t}')">${t}</button>
+  `).join('');
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  renderFilters();
+  renderArticles();
+}
+
+function renderArticles() {
+  let filtered = allArticles;
+
+  if (activeRegion !== 'Tutte') {
+    filtered = filtered.filter(a => a.regione === activeRegion);
+  }
+
+  if (activeFilter !== 'Tutti') {
+    filtered = filtered.filter(a => a.tipologia_immobile === activeFilter);
+  }
+
+  const grid = document.getElementById('articles-grid');
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="no-results"><p class="no-results-text">Nessun articolo trovato per i filtri selezionati.</p></div>`;
+    return;
+  }
+
+  // Sort: featured first, then by gravity
+  const order = { alta: 0, media: 1, bassa: 2 };
+  filtered.sort((a, b) => {
+    if (a.featured && !b.featured) return -1;
+    if (!a.featured && b.featured) return 1;
+    return (order[a.gravita] || 1) - (order[b.gravita] || 1);
+  });
+
+  grid.innerHTML = filtered.map((art, i) => renderCard(art, i)).join('');
+}
+
+function renderCard(art, idx) {
+  const isFeatured = art.featured && idx === 0;
+  const tags = (art.tags || []).slice(0, 3).map(t => `<span class="tag">${t}</span>`).join('');
+  const gravColor = art.gravita === 'alta' ? 'alta' : art.gravita === 'media' ? 'media' : 'bassa';
+  const gravLabel = art.gravita === 'alta' ? 'Gravità alta' : art.gravita === 'media' ? 'Gravità media' : 'Gravità bassa';
+
+  if (isFeatured) {
+    return `
+      <article class="article-card featured" data-region="${art.regione}">
+        <div class="featured-visual">
+          <div class="featured-icon">🔥</div>
+          <div class="featured-stat">${art.regione}<br>${art.comune}</div>
+        </div>
+        <div>
+          <div class="featured-label">Notizia di rilievo</div>
+          <div class="card-meta">
+            <span class="card-region" data-r="${art.regione}">${art.regione}</span>
+            <span class="card-date">${art.data} ${art.ora ? '— ' + art.ora : ''}</span>
+          </div>
+          <div class="card-source">${art.fonte} &mdash; ${art.tipologia_immobile || ''}</div>
+          <h2 class="card-title">${art.titolo}</h2>
+          <p class="card-summary">${art.sommario}</p>
+          <div class="card-tags">${tags}</div>
+          <div class="card-footer">
+            <div class="card-severity">
+              <div class="severity-dot ${gravColor}"></div>
+              ${gravLabel}
+            </div>
+            <a href="${art.url || '#'}" class="card-link" target="_blank" rel="noopener">Leggi articolo →</a>
+          </div>
+        </div>
+      </article>
+    `;
+  }
+
+  return `
+    <article class="article-card" data-region="${art.regione}">
+      <div class="card-meta">
+        <span class="card-region" data-r="${art.regione}">${art.regione}</span>
+        <span class="card-date">${art.data} ${art.ora ? '— ' + art.ora : ''}</span>
+      </div>
+      <div class="card-source">${art.fonte} &mdash; ${art.comune || ''}</div>
+      <h2 class="card-title">${art.titolo}</h2>
+      <p class="card-summary">${art.sommario}</p>
+      <div class="card-tags">${tags}</div>
+      <div class="card-footer">
+        <div class="card-severity">
+          <div class="severity-dot ${gravColor}"></div>
+          ${gravLabel}
+        </div>
+        <a href="${art.url || '#'}" class="card-link" target="_blank" rel="noopener">Leggi →</a>
+      </div>
+    </article>
+  `;
+}
 </script>
 </body>
 </html>
