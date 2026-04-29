@@ -3,725 +3,942 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Planning Operai</title>
+<title>Preventivo Offerta</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;background:#f5f5f3;color:#1a1a1a;min-height:100vh;padding:1.5rem}
-.app{max-width:1200px;margin:0 auto;background:#fff;border-radius:12px;padding:1.5rem;border:1px solid #e0dfd8}
-.btn{background:#fff;border:1px solid #ccc;border-radius:8px;padding:6px 13px;font-size:13px;cursor:pointer;color:#1a1a1a;transition:background .15s}
-.btn:hover{background:#f0f0ee}
-.btn.primary{background:#185FA5;color:#fff;border-color:#185FA5}
-.btn.primary:hover{background:#0C447C}
-.btn.active{background:#185FA5;color:#fff;border-color:#185FA5}
-.btn.danger{background:#A32D2D;color:#fff;border-color:#A32D2D}
-.btn.danger:hover{background:#791F1F}
-.btn.sm{padding:3px 8px;font-size:11px}
-.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:1rem}
-.nav-bar{display:flex;align-items:center;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
-.nav-bar span{font-size:13px;color:#666;min-width:180px;text-align:center}
-.legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem}
-.leg-item{display:flex;align-items:center;gap:4px;font-size:11px;color:#666}
-.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
-.grid-wrapper{overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:600px}
-thead th{font-size:11px;font-weight:500;color:#666;padding:7px 5px;border-bottom:1px solid #e8e8e4;text-align:center;background:#f8f8f6}
-/* Prima colonna sticky */
-thead th:first-child{position:sticky;left:0;z-index:3;background:#f8f8f6;border-right:2px solid #d8d8d4}
-tbody tr{border-bottom:1px solid #f0f0ec}
-tbody tr:hover td{background:#fafaf8}
-td.date-cell{padding:6px 8px;font-size:11px;font-weight:600;color:#444;white-space:nowrap;border-right:2px solid #d8d8d4;vertical-align:middle;position:sticky;left:0;z-index:2;background:#fff}
-tbody tr:hover td.date-cell{background:#f5f5f3}
-td.shift-cell{padding:4px 3px;text-align:center;min-width:110px;vertical-align:top}
-.sbadge{display:inline-flex;align-items:center;justify-content:center;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;min-width:44px;position:relative;user-select:none}
-.sbadge:hover{opacity:.8}
-.sG{background:#B5D4F4;color:#0C447C}
-.sN{background:#CECBF6;color:#3C3489}
-.sR{background:#D3D1C7;color:#444}
-.sFE{background:#F5C4B3;color:#712B13}
-.sOFF{background:transparent;color:#bbb;border:1px dashed #ddd}
-.ndot{position:absolute;top:1px;left:1px;width:5px;height:5px;border-radius:50%;background:#185FA5}
-.otbadge{display:inline-block;font-size:9px;font-weight:700;background:#FAC775;color:#633806;border-radius:3px;padding:1px 4px;margin-left:2px;vertical-align:middle}
-.cnote{font-size:9px;color:#185FA5;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:104px;display:block;text-align:center}
-.summary-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:1.25rem}
-.scard{background:#f5f5f3;border-radius:8px;padding:10px 14px;flex:1;min-width:90px}
-.scard .sl{font-size:11px;color:#888;margin-bottom:3px}
-.scard .sv{font-size:20px;font-weight:700;color:#1a1a1a}
-/* Modal — usa position:fixed, nessun ID condiviso tra istanze */
-.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem}
-.mbox{background:#fff;border-radius:12px;border:1px solid #ddd;padding:1.5rem;width:100%;max-width:390px;max-height:88vh;overflow-y:auto}
-.mbox h3{font-size:15px;font-weight:700;margin-bottom:2px}
-.msub{font-size:12px;color:#888;margin-bottom:14px}
-.mlbl{font-size:11px;font-weight:600;color:#555;display:block;margin:12px 0 4px}
-.mbox input[type=text],.mbox input[type=number],.mbox select,.mbox textarea{
-  width:100%;padding:7px 10px;font-size:13px;border-radius:8px;
-  border:1px solid #ccc;background:#fff;color:#1a1a1a;outline:none}
-.mbox textarea{resize:vertical;min-height:72px}
-.mactions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
-.spicker{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:2px}
-.spbtn{padding:7px 4px;border-radius:4px;font-size:11px;font-weight:700;border:2px solid transparent;cursor:pointer;text-align:center;transition:border-color .12s}
-.spbtn.sel{border-color:#185FA5}
-.otrow{display:flex;align-items:center;gap:8px;margin-top:12px;padding:8px 10px;border-radius:8px;background:#FFF8EC;border:1px solid #FAC775}
-.otlbl{display:flex;align-items:center;gap:6px;font-size:12px;color:#633806;font-weight:700;cursor:pointer;flex:1}
-.otlbl input[type=checkbox]{width:15px;height:15px;accent-color:#BA7517;flex-shrink:0;cursor:pointer}
-.othours{display:flex;align-items:center;gap:5px}
-.othours input{width:66px;padding:4px 8px;font-size:12px;border-radius:6px;border:1px solid #FAC775;outline:none}
-.othours span{font-size:12px;color:#633806}
-.tipo-cc{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:#CECBF6;color:#3C3489}
-.tipo-to{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:#C0DD97;color:#27500A}
-.mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;min-width:540px}
-.mgwrap{overflow-x:auto;margin-bottom:1rem}
-.dhead{font-size:11px;font-weight:500;color:#666;text-align:center;padding:4px 0;background:#f8f8f6;border-radius:3px}
-.mday{border-radius:5px;border:1px solid #eee;background:#fff;min-height:62px;padding:4px;cursor:pointer}
-.mday:hover{border-color:#999}
-.mday.om{opacity:.3;cursor:default}
-.mday.td{border-color:#185FA5}
-.dnum{font-size:10px;color:#888;margin-bottom:2px}
-.mshift{font-size:9px;font-weight:700;border-radius:2px;padding:1px 3px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#185FA5;color:#fff;
-  padding:9px 22px;border-radius:8px;font-size:13px;z-index:9999;pointer-events:none;
-  opacity:0;transition:opacity .3s;white-space:nowrap}
-.toast.show{opacity:1}
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #F7F6F2;
+    --surface: #FFFFFF;
+    --surface2: #F0EFE9;
+    --border: #E2E0D8;
+    --border2: #CCCAC0;
+    --text: #1A1917;
+    --text2: #6B6860;
+    --text3: #9E9C96;
+    --accent: #1E3A5F;
+    --accent2: #2F5496;
+    --accent-light: #E8EFF8;
+    --orange: #C85A1A;
+    --orange-light: #FBF0E9;
+    --green: #1A5C3A;
+    --green-light: #E8F4EE;
+    --red: #8B1A1A;
+    --red-light: #FBE8E8;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    background: var(--accent);
+    color: white;
+    padding: 0 2rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .topbar-brand { display: flex; align-items: center; gap: 12px; }
+  .topbar-logo {
+    width: 32px; height: 32px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 600;
+  }
+  .topbar-title { font-size: 15px; font-weight: 500; letter-spacing: -0.02em; }
+  .topbar-sub { font-size: 11px; opacity: 0.6; font-family: 'DM Mono', monospace; }
+  .topbar-actions { display: flex; gap: 8px; }
+  .btn-topbar {
+    padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: none; font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+  .btn-ghost { background: rgba(255,255,255,0.12); color: white; }
+  .btn-ghost:hover { background: rgba(255,255,255,0.22); }
+  .btn-white { background: white; color: var(--accent); }
+  .btn-white:hover { background: #f0f0f0; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+
+  /* ── LAYOUT ── */
+  .layout { display: flex; min-height: calc(100vh - 56px); }
+
+  .sidebar {
+    width: 220px; flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 0;
+    position: sticky;
+    top: 56px;
+    height: calc(100vh - 56px);
+    overflow-y: auto;
+  }
+  .sidebar-section { padding: 0 1rem 1rem; }
+  .sidebar-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+    color: var(--text3); text-transform: uppercase;
+    padding: 0 0.5rem; margin-bottom: 4px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; border-radius: 6px; cursor: pointer;
+    font-size: 13px; color: var(--text2);
+    transition: all 0.12s; user-select: none;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+  .nav-icon { font-size: 15px; width: 20px; text-align: center; }
+  .nav-badge {
+    margin-left: auto; background: var(--accent); color: white;
+    font-size: 10px; font-weight: 600; padding: 1px 6px;
+    border-radius: 99px; font-family: 'DM Mono', monospace;
+  }
+
+  .sidebar-divider { height: 1px; background: var(--border); margin: 0.75rem 1rem; }
+
+  .main { flex: 1; padding: 2rem; overflow-y: auto; }
+
+  /* ── PANES ── */
+  .pane { display: none; animation: fadeIn 0.2s ease; }
+  .pane.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    margin-bottom: 1.25rem;
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+  .card-body { padding: 18px; }
+
+  /* ── FORM ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-full { grid-column: 1 / -1; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
+  .field input, .field textarea, .field select {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 3px rgba(47,84,150,0.1);
+  }
+  .field textarea { resize: vertical; min-height: 80px; }
+
+  /* ── SEZIONI OFFERTA ── */
+  .section-wrap { margin-bottom: 1rem; }
+  .section-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px;
+    background: var(--accent);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    cursor: pointer; user-select: none;
+  }
+  .section-head.collapsed { border-radius: var(--radius-lg); }
+  .section-chevron { color: rgba(255,255,255,0.6); font-size: 12px; transition: transform 0.2s; }
+  .section-head.collapsed .section-chevron { transform: rotate(-90deg); }
+  .section-name-input {
+    flex: 1; background: transparent; border: none; outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600; color: white;
+    cursor: text;
+  }
+  .section-name-input::placeholder { color: rgba(255,255,255,0.5); }
+  .section-subtotal { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); font-family: 'DM Mono', monospace; white-space: nowrap; }
+  .section-del { background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.7); width: 26px; height: 26px; border-radius: 5px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+  .section-del:hover { background: rgba(255,255,255,0.2); color: white; }
+
+  .section-body {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .subsection { border-bottom: 1px solid var(--border); }
+  .subsection:last-child { border-bottom: none; }
+  .subsection-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px;
+    background: var(--accent-light);
+  }
+  .subsection-name-input {
+    flex: 1; background: transparent; border: none; outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 600; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .subsection-del { background: transparent; border: none; color: var(--text3); cursor: pointer; font-size: 15px; padding: 2px 4px; border-radius: 4px; }
+  .subsection-del:hover { background: var(--red-light); color: var(--red); }
+
+  /* Row tabella voci */
+  .items-table { width: 100%; }
+  .items-header {
+    display: grid;
+    grid-template-columns: 1fr 90px 100px 110px 110px 30px;
+    gap: 6px; padding: 6px 16px 4px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .col-hd { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; }
+  .col-hd.right { text-align: right; }
+
+  .item-row {
+    display: grid;
+    grid-template-columns: 1fr 90px 100px 110px 110px 30px;
+    gap: 6px; padding: 6px 16px;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  .item-row:hover { background: #FAFAF8; }
+  .item-row:last-child { border-bottom: none; }
+
+  .inp-desc {
+    width: 100%; font-family: 'DM Sans', sans-serif; font-size: 12px;
+    padding: 5px 8px; border: 1px solid transparent; border-radius: 5px;
+    background: transparent; color: var(--text); outline: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .inp-desc:focus { border-color: var(--border2); background: var(--surface); }
+  .inp-num {
+    width: 100%; font-family: 'DM Mono', monospace; font-size: 12px;
+    padding: 5px 8px; border: 1px solid transparent; border-radius: 5px;
+    background: transparent; color: var(--text); outline: none; text-align: right;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .inp-num:focus { border-color: var(--border2); background: var(--surface); }
+  .inp-um {
+    width: 100%; font-family: 'DM Sans', sans-serif; font-size: 11px;
+    padding: 5px 6px; border: 1px solid transparent; border-radius: 5px;
+    background: transparent; color: var(--text); outline: none;
+    transition: border-color 0.15s;
+    cursor: pointer;
+  }
+  .inp-um:focus { border-color: var(--border2); background: var(--surface); }
+  .cell-total {
+    font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500;
+    text-align: right; color: var(--text); padding: 0 8px;
+  }
+  .btn-del-row {
+    width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+    border: 1px solid transparent; border-radius: 5px; cursor: pointer;
+    background: transparent; color: var(--text3); font-size: 16px;
+    transition: all 0.12s;
+  }
+  .btn-del-row:hover { border-color: var(--red-light); background: var(--red-light); color: var(--red); }
+
+  .items-footer { padding: 8px 16px; }
+  .btn-add-item {
+    padding: 5px 12px; font-size: 12px; font-family: 'DM Sans', sans-serif;
+    border: 1px dashed var(--border2); border-radius: 5px;
+    background: transparent; color: var(--text2); cursor: pointer;
+    transition: all 0.12s;
+  }
+  .btn-add-item:hover { border-color: var(--accent2); color: var(--accent); background: var(--accent-light); }
+
+  .subtotal-strip {
+    display: flex; justify-content: flex-end; align-items: center; gap: 16px;
+    padding: 10px 18px;
+    background: var(--orange-light);
+    border-top: 1px solid #F0D5C0;
+  }
+  .subtotal-label { font-size: 11px; font-weight: 600; color: var(--orange); text-transform: uppercase; letter-spacing: 0.04em; }
+  .subtotal-val { font-size: 14px; font-weight: 600; color: var(--orange); font-family: 'DM Mono', monospace; }
+
+  .btn-add-subsec {
+    width: 100%; padding: 9px; font-size: 12px; font-family: 'DM Sans', sans-serif;
+    border: 1px dashed var(--border2); border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    background: var(--surface2); color: var(--text2); cursor: pointer;
+    transition: all 0.12s; margin-top: -1px;
+  }
+  .btn-add-subsec:hover { color: var(--accent); background: var(--accent-light); }
+
+  /* ── ADD SECTION ── */
+  .btn-add-section {
+    width: 100%; padding: 12px; font-size: 13px; font-family: 'DM Sans', sans-serif;
+    border: 2px dashed var(--border2); border-radius: var(--radius-lg);
+    background: transparent; color: var(--text2); cursor: pointer;
+    transition: all 0.15s; margin-bottom: 1.5rem;
+  }
+  .btn-add-section:hover { border-color: var(--accent2); color: var(--accent); background: var(--accent-light); }
+
+  /* ── TOTALI ── */
+  .totals-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow);
+    overflow: hidden; margin-top: 1.5rem;
+  }
+  .totals-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 20px; border-bottom: 1px solid var(--border);
+  }
+  .totals-row:last-child { border-bottom: none; }
+  .totals-lbl { font-size: 13px; color: var(--text2); }
+  .totals-val { font-size: 14px; font-weight: 600; font-family: 'DM Mono', monospace; color: var(--text); }
+  .totals-grand { background: var(--accent); }
+  .totals-grand .totals-lbl { color: rgba(255,255,255,0.8); font-weight: 600; font-size: 14px; }
+  .totals-grand .totals-val { color: white; font-size: 18px; }
+
+  /* ── ANTEPRIMA ── */
+  .preview-doc {
+    background: white; border: 1px solid var(--border);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+    padding: 40px 48px; max-width: 860px; margin: 0 auto;
+  }
+  .prev-header { display: flex; justify-content: space-between; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 2px solid var(--accent); }
+  .prev-company { font-size: 22px; font-weight: 600; color: var(--accent); letter-spacing: -0.03em; }
+  .prev-meta { text-align: right; }
+  .prev-meta p { font-size: 12px; color: var(--text2); margin-bottom: 2px; }
+  .prev-meta strong { color: var(--text); }
+  .prev-client { margin-bottom: 28px; padding: 16px 20px; background: var(--accent-light); border-radius: 8px; border-left: 3px solid var(--accent2); }
+  .prev-client-lbl { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: var(--accent2); text-transform: uppercase; margin-bottom: 6px; }
+  .prev-client p { font-size: 13px; color: var(--text); }
+
+  .prev-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; }
+  .prev-table th { padding: 8px 10px; background: var(--accent); color: white; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; text-align: left; }
+  .prev-table th.right { text-align: right; }
+  .prev-table td { padding: 7px 10px; border-bottom: 1px solid #F0EFE9; }
+  .prev-table tr.sec-row td { font-weight: 700; background: var(--accent); color: white; padding: 8px 10px; font-size: 11px; letter-spacing: 0.02em; }
+  .prev-table tr.subsec-row td { font-weight: 600; background: var(--accent-light); color: var(--accent2); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; padding: 6px 10px; }
+  .prev-table tr.item-row:hover td { background: #FAFAF8; }
+  .prev-table tr.subtot-row td { font-weight: 600; background: var(--orange-light); color: var(--orange); font-size: 12px; }
+  .prev-table td.right { text-align: right; font-family: 'DM Mono', monospace; }
+  .prev-table td.indent { padding-left: 20px; }
+
+  .prev-totals { margin-top: 16px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .prev-tot-row { display: flex; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .prev-tot-row:last-child { border-bottom: none; background: var(--accent); color: white; font-weight: 700; font-size: 15px; }
+  .prev-tot-row span:last-child { font-family: 'DM Mono', monospace; }
+  .prev-note { margin-top: 24px; padding: 14px 16px; background: var(--surface2); border-radius: 8px; font-size: 12px; color: var(--text2); }
+
+  /* ── BUTTONS ── */
+  .btn { padding: 9px 18px; border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border2); }
+  .btn-secondary:hover { background: var(--surface2); }
+  .btn-danger { background: var(--red-light); color: var(--red); border: 1px solid #F0C0C0; }
+  .btn-danger:hover { background: #F7D0D0; }
+
+  .action-bar { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+
+  /* ── STATS ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; box-shadow: var(--shadow); }
+  .stat-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .stat-val { font-size: 22px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; letter-spacing: -0.02em; }
+  .stat-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--accent); color: white;
+    padding: 12px 20px; border-radius: var(--radius);
+    font-size: 13px; font-weight: 500;
+    box-shadow: var(--shadow-lg); z-index: 9999;
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  @media print {
+    .topbar, .sidebar, .action-bar, .btn-add-section { display: none !important; }
+    .main { padding: 0; }
+    .preview-doc { box-shadow: none; border: none; }
+  }
 </style>
 </head>
 <body>
-<div class="app">
-  <h1 style="font-size:20px;font-weight:700;margin-bottom:1.25rem">&#128197; Planning Operai</h1>
 
-  <div class="toolbar">
-    <div style="display:flex;gap:4px">
-      <button class="btn active" id="tab-week" onclick="switchView('week')">Vista settimana</button>
-      <button class="btn" id="tab-month" onclick="switchView('month')">Vista mese</button>
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">PO</div>
+    <div>
+      <div class="topbar-title">Preventivo Offerta</div>
+      <div class="topbar-sub">v1.0 — standalone</div>
     </div>
-    <button class="btn primary" onclick="openAddWorker()">+ Aggiungi operaio</button>
-    <button class="btn" onclick="openManageWorkers()">Gestisci operai</button>
-    <button class="btn" onclick="exportCSV()">&#11015; Esporta CSV</button>
   </div>
-
-  <div class="nav-bar">
-    <button class="btn" onclick="navPrev()">&#8592;</button>
-    <span id="nav-label"></span>
-    <button class="btn" onclick="navNext()">&#8594;</button>
-  </div>
-
-  <div class="legend">
-    <div class="leg-item"><div class="leg-dot" style="background:#B5D4F4"></div>Giornata (G)</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#CECBF6"></div>Notte (N)</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#D3D1C7"></div>Riposo (R)</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#F5C4B3"></div>Ferie (FE)</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#FAC775"></div>Straordinario</div>
-    <div class="leg-item"><div class="leg-dot" style="background:#185FA5;border-radius:50%;width:6px;height:6px"></div>Nota</div>
-  </div>
-
-  <div style="position:relative">
-    <div id="view-week">
-      <div class="grid-wrapper">
-        <table><thead id="thead"></thead><tbody id="tbody"></tbody></table>
-      </div>
-      <div class="summary-row" id="summary"></div>
-    </div>
-    <div id="view-month" style="display:none">
-      <div class="mgwrap"><div class="mgrid" id="mgrid"></div></div>
-      <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
-        <span style="font-size:12px;color:#666">Operaio:</span>
-        <select id="msel" onchange="renderMonth()"
-          style="font-size:13px;padding:5px 10px;border-radius:8px;border:1px solid #ccc;background:#fff;outline:none"></select>
-      </div>
-      <div class="summary-row" id="msummary"></div>
-    </div>
-    <div id="modal-root"></div>
+  <div class="topbar-actions">
+    <button class="btn-topbar btn-ghost" onclick="showPane('anteprima')">👁 Anteprima</button>
+    <button class="btn-topbar btn-ghost" onclick="window.print()">🖨 Stampa</button>
+    <button class="btn-topbar btn-white" onclick="exportExcel()">⬇ Esporta .xlsx</button>
   </div>
 </div>
-<div class="toast" id="toast"></div>
 
-<script>
-// ═══════════════════════════════════════════════════════════════════════════════
-// COSTANTI
-// ═══════════════════════════════════════════════════════════════════════════════
-const SHIFTS = ['G','N','R','FE','OFF'];
-const SL = {G:'Giornata', N:'Notte', R:'Riposo', FE:'Ferie', OFF:'Non assegnato'};
-const SBG = {G:'#B5D4F4', N:'#CECBF6', R:'#D3D1C7', FE:'#F5C4B3', OFF:'transparent'};
-const SFG = {G:'#0C447C', N:'#3C3489', R:'#444', FE:'#712B13', OFF:'#bbb'};
-const SCS = {G:'sG', N:'sN', R:'sR', FE:'sFE', OFF:'sOFF'};
-const DIT = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
-const MIT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
-             'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Navigazione</div>
+      <div class="nav-item active" id="nav-cliente" onclick="showPane('cliente')">
+        <span class="nav-icon">👤</span> Dati cliente
+      </div>
+      <div class="nav-item" id="nav-offerta" onclick="showPane('offerta')">
+        <span class="nav-icon">📋</span> Voci offerta
+        <span class="nav-badge" id="badge-voci">0</span>
+      </div>
+      <div class="nav-item" id="nav-anteprima" onclick="showPane('anteprima')">
+        <span class="nav-icon">👁</span> Anteprima
+      </div>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Azioni</div>
+      <div class="nav-item" onclick="exportExcel()">
+        <span class="nav-icon">📊</span> Esporta Excel
+      </div>
+      <div class="nav-item" onclick="window.print()">
+        <span class="nav-icon">🖨</span> Stampa PDF
+      </div>
+      <div class="nav-item" onclick="newDoc()">
+        <span class="nav-icon">🗑</span> Nuovo doc.
+      </div>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Totale rapido</div>
+      <div style="padding: 4px 4px;">
+        <div style="font-size: 10px; color: var(--text3); margin-bottom: 3px;">IVA esclusa</div>
+        <div style="font-size: 16px; font-weight: 600; font-family: 'DM Mono', monospace; color: var(--accent);" id="sidebar-total">€ 0,00</div>
+        <div style="font-size: 10px; color: var(--text3); margin-top: 6px; margin-bottom: 3px;">IVA inclusa</div>
+        <div style="font-size: 13px; font-weight: 600; font-family: 'DM Mono', monospace; color: var(--text);" id="sidebar-total-iva">€ 0,00</div>
+      </div>
+    </div>
+  </nav>
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// STATO APP
-// ═══════════════════════════════════════════════════════════════════════════════
-let view = 'week';
-let wkStart = wkOf(new Date('2026-05-01'));
-let curMon = {y:2026, m:4};
-let nid = 200;
+  <main class="main">
+    <!-- PANE CLIENTE -->
+    <div class="pane active" id="pane-cliente">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Dati cliente e offerta</span>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="field form-full">
+              <label>Ragione sociale / Cliente</label>
+              <input type="text" id="f-nome" placeholder="Nome azienda o cliente" oninput="updateAll()">
+            </div>
+            <div class="field form-full">
+              <label>Indirizzo cantiere / luogo intervento</label>
+              <input type="text" id="f-indirizzo" placeholder="Via, Città, CAP" oninput="updateAll()">
+            </div>
+            <div class="field">
+              <label>Numero offerta</label>
+              <input type="text" id="f-numero" placeholder="es. OFF-2025-001" oninput="updateAll()">
+            </div>
+            <div class="field">
+              <label>Data offerta</label>
+              <input type="date" id="f-data" oninput="updateAll()">
+            </div>
+            <div class="field">
+              <label>Validità (giorni)</label>
+              <input type="number" id="f-validita" placeholder="30" value="30" oninput="updateAll()">
+            </div>
+            <div class="field">
+              <label>Aliquota IVA (%)</label>
+              <input type="number" id="f-iva" placeholder="22" value="22" oninput="updateAll()">
+            </div>
+            <div class="field form-full">
+              <label>Condizioni / Note</label>
+              <textarea id="f-note" placeholder="Condizioni di pagamento, scadenze, avvertenze..." oninput="updateAll()"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-let workers = JSON.parse(localStorage.getItem('po_w') || 'null') || [
-  {id:1,  name:'Louis Jean Patrick',      role:'', tipo:'Tecnico/Operaio'},
-  {id:2,  name:'Bartus Odon Csaba',       role:'', tipo:'Tecnico/Operaio'},
-  {id:3,  name:'Zoltan Lucàs',            role:'', tipo:'Tecnico/Operaio'},
-  {id:4,  name:'Andre Jean Bernard',      role:'', tipo:'Tecnico/Operaio'},
-  {id:5,  name:'Nicolas Marie',           role:'', tipo:'Tecnico/Operaio'},
-  {id:6,  name:'Gaetan Gilbert',          role:'', tipo:'Tecnico/Operaio'},
-  {id:7,  name:'Derzhovskyi Oleksandr',   role:'', tipo:'Tecnico/Operaio'},
-  {id:8,  name:'Louis Brandon',           role:'', tipo:'Tecnico/Operaio'},
-  {id:9,  name:'Pili Alessandro',         role:'', tipo:'Tecnico/Operaio'},
-  {id:10, name:'Arraj Xhenijsian',        role:'', tipo:'Tecnico/Operaio'},
-  {id:11, name:'Salama Hani',             role:'', tipo:'Tecnico/Operaio'},
-  {id:12, name:'Villani Luca',            role:'', tipo:'Tecnico/Operaio'},
-  {id:13, name:'Falanga Nicolò',          role:'', tipo:'Tecnico/Operaio'},
-  {id:14, name:'Ruzzoli Daniele',         role:'', tipo:'Tecnico/Operaio'},
-  {id:15, name:'Zaccara Valerio',         role:'', tipo:'Tecnico/Operaio'},
-  {id:16, name:'Scarano Pasquale',        role:'', tipo:'Tecnico/Operaio'},
-  {id:17, name:'Mondello Francesco',      role:'', tipo:'Tecnico/Operaio'},
-  {id:18, name:'Mezini Mexhit',           role:'', tipo:'Tecnico/Operaio'},
-  {id:19, name:'Gijeci Preng',            role:'', tipo:'Tecnico/Operaio'},
-  {id:20, name:'Muhammad Shazad',         role:'', tipo:'Tecnico/Operaio'},
-  {id:21, name:'Ismajli Luigi',           role:'', tipo:'Tecnico/Operaio'},
-  {id:22, name:'Venv Dimitar',            role:'', tipo:'Tecnico/Operaio'},
-  {id:23, name:'Rizzo Placido',           role:'', tipo:'Tecnico/Operaio'},
-  {id:24, name:'Abdul Hussain',           role:'', tipo:'Tecnico/Operaio'},
-  {id:25, name:'Calin Daniel',            role:'', tipo:'Tecnico/Operaio'},
-  {id:26, name:'Ciprian Moraru',          role:'', tipo:'Tecnico/Operaio'},
-  {id:27, name:'Shiponchki Radslov',      role:'', tipo:'Tecnico/Operaio'},
-  {id:28, name:'Elayyane Miloud',         role:'', tipo:'Tecnico/Operaio'},
-  {id:29, name:'Alexander Stoimenov',     role:'', tipo:'Tecnico/Operaio'},
-  {id:30, name:'Dedej Besnik',            role:'', tipo:'Tecnico/Operaio'},
-  {id:31, name:'Leonardo Gallo',          role:'', tipo:'Tecnico/Operaio'},
-];
-let sched = JSON.parse(localStorage.getItem('po_s') || '{}');
-let otime = JSON.parse(localStorage.getItem('po_o') || '{}');
-let nots  = JSON.parse(localStorage.getItem('po_n') || '{}');
-
-function persist(){
-  localStorage.setItem('po_w', JSON.stringify(workers));
-  localStorage.setItem('po_s', JSON.stringify(sched));
-  localStorage.setItem('po_o', JSON.stringify(otime));
-  localStorage.setItem('po_n', JSON.stringify(nots));
-}
-
-// Normalizza le chiavi degli oggetti a stringhe (fix per dati già salvati con chiavi numeriche)
-function normalizeKeys(obj){
-  const out={};
-  Object.keys(obj).forEach(k=>{ out[String(k)]=obj[k]; });
-  return out;
-}
-sched = normalizeKeys(sched);
-otime = normalizeKeys(otime);
-nots  = normalizeKeys(nots);
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// UTILITY
-// ═══════════════════════════════════════════════════════════════════════════════
-function wkOf(d){
-  const dt=new Date(d), day=dt.getDay();
-  dt.setDate(dt.getDate()+(day===0?-6:1-day)); dt.setHours(0,0,0,0); return dt;
-}
-function addD(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r; }
-function fmt(d){ return d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'}); }
-function key(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function dw(d){ return d.getDay()===0?6:d.getDay()-1; }
-function h(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-function gS(wid,dk){ const k=String(wid); return (sched[k]&&sched[k][dk])||'OFF'; }
-function sS(wid,dk,v){ const k=String(wid); if(!sched[k])sched[k]={}; sched[k][dk]=v; persist(); }
-function gO(wid,dk){ const k=String(wid); return (otime[k]&&otime[k][dk])||0; }
-function sO(wid,dk,v){ const k=String(wid); if(!otime[k])otime[k]={}; otime[k][dk]=v; persist(); }
-function gN(wid,dk){ const k=String(wid); return (nots[k]&&nots[k][dk])||''; }
-function sN(wid,dk,v){ const k=String(wid); if(!nots[k])nots[k]={}; nots[k][dk]=v; persist(); }
-
-function toast(msg){
-  const t=document.getElementById('toast'); t.textContent=msg;
-  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);
-}
-function tbadge(w){
-  return w.tipo==='Capo Cantiere'
-    ? `<span class="tipo-cc">Capo Cantiere</span>`
-    : `<span class="tipo-to">Tecnico/Operaio</span>`;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// NAVIGAZIONE
-// ═══════════════════════════════════════════════════════════════════════════════
-function switchView(v){
-  view=v;
-  document.getElementById('view-week').style.display  = v==='week' ?'':'none';
-  document.getElementById('view-month').style.display = v==='month'?'':'none';
-  document.getElementById('tab-week').className  = 'btn'+(v==='week' ?' active':'');
-  document.getElementById('tab-month').className = 'btn'+(v==='month'?' active':'');
-  v==='month'?renderMonth():render();
-}
-function navPrev(){
-  if(view==='week'){ wkStart=addD(wkStart,-7); render(); }
-  else{ if(--curMon.m<0){curMon.m=11;curMon.y--;} renderMonth(); }
-}
-function navNext(){
-  if(view==='week'){ wkStart=addD(wkStart,7); render(); }
-  else{ if(++curMon.m>11){curMon.m=0;curMon.y++;} renderMonth(); }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// RENDER SETTIMANA
-// ═══════════════════════════════════════════════════════════════════════════════
-function render(){
-  const days=[];
-  for(let i=0;i<7;i++) days.push(addD(wkStart,i));
-  document.getElementById('nav-label').textContent = fmt(days[0])+' — '+fmt(days[6])+' '+days[0].getFullYear();
-
-  // Header: Data + colonna per operaio
-  const ths = workers.map(w=>
-    `<th style="min-width:115px;padding:6px 4px;background:#f8f8f6;border-bottom:1px solid #e8e8e4">
-      <div style="font-size:11px;font-weight:700;color:#1a1a1a">${h(w.name)}</div>
-      <div style="font-size:10px;color:#888;margin:1px 0">${h(w.role)}</div>
-      ${tbadge(w)}
-    </th>`).join('');
-  document.getElementById('thead').innerHTML =
-    `<tr><th style="text-align:left;min-width:82px;padding:7px 8px;background:#f8f8f6;border-bottom:1px solid #e8e8e4;font-size:11px;font-weight:500;color:#666">Data</th>${ths}</tr>`;
-
-  // Righe: una per giorno
-  const trs = days.map(d=>{
-    const dk=key(d);
-    const dtd=`<td class="date-cell">${DIT[dw(d)]}<br><span style="font-weight:400;color:#888;font-size:10px">${fmt(d)}</span></td>`;
-    const wtds=workers.map(w=>{
-      const s=gS(w.id,dk), ot=gO(w.id,dk), note=gN(w.id,dk);
-      return `<td class="shift-cell">
-        <span class="sbadge ${SCS[s]}" onclick="cycleS(${w.id},'${dk}')">
-          ${s==='OFF'?'—':s}${note?'<span class="ndot"></span>':''}
-        </span>${ot>0?`<span class="otbadge">+${ot}h</span>`:''}
-        ${note?`<span class="cnote" title="${h(note)}">${h(note)}</span>`:''}
-        <div style="margin-top:3px"><button class="btn sm" onclick="openDetail(${w.id},'${dk}')">&#9998;</button></div>
-      </td>`;
-    }).join('');
-    return `<tr>${dtd}${wtds}</tr>`;
-  }).join('');
-  document.getElementById('tbody').innerHTML = trs;
-  renderSum(days);
-}
-
-function cycleS(wid,dk){
-  const i=SHIFTS.indexOf(gS(wid,dk));
-  sS(wid,dk,SHIFTS[(i+1)%SHIFTS.length]);
-  render();
-}
-
-function renderSum(days){
-  let ore=0,ot=0,att=0,nti=0,fe=0;
-  workers.forEach(w=>{
-    let ha=false;
-    days.forEach(d=>{
-      const dk=key(d),s=gS(w.id,dk);
-      if(['G','N'].includes(s)){ore+=8;ha=true;}
-      if(s==='N')nti++; if(s==='FE')fe++;
-      ot+=gO(w.id,dk);
-    });
-    if(ha)att++;
-  });
-  document.getElementById('summary').innerHTML=`
-    <div class="scard"><div class="sl">Ore totali</div><div class="sv">${ore}h</div></div>
-    <div class="scard"><div class="sl">Straordinari</div><div class="sv" style="color:#BA7517">${ot}h</div></div>
-    <div class="scard"><div class="sl">Operai attivi</div><div class="sv">${att}</div></div>
-    <div class="scard"><div class="sl">Turni notte</div><div class="sv">${nti}</div></div>
-    <div class="scard"><div class="sl">Ferie/riposi</div><div class="sv">${fe}</div></div>`;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// RENDER MESE
-// ═══════════════════════════════════════════════════════════════════════════════
-function renderMonth(){
-  const {y,m}=curMon;
-  document.getElementById('nav-label').textContent=MIT[m]+' '+y;
-  const sel=document.getElementById('msel');
-  const prev=sel.value;
-  sel.innerHTML=workers.map(w=>`<option value="${w.id}">${h(w.name)}</option>`).join('');
-  if(prev&&workers.find(w=>w.id==prev))sel.value=prev;
-  const wid=parseInt(sel.value)||workers[0]?.id;
-  if(!wid)return;
-
-  const first=new Date(y,m,1),last=new Date(y,m+1,0);
-  const sdow=first.getDay()===0?6:first.getDay()-1;
-  const today=key(new Date());
-  const total=Math.ceil((sdow+last.getDate())/7)*7;
-
-  let html=DIT.map(d=>`<div class="dhead">${d}</div>`).join('');
-  for(let i=0;i<total;i++){
-    const date=new Date(y,m,1+(i-sdow));
-    const inM=date.getMonth()===m, dk=key(date);
-    const s=gS(wid,dk),ot=gO(wid,dk),note=gN(wid,dk),isT=dk===today;
-    html+=`<div class="mday${!inM?' om':''}${isT?' td':''}"
-      ${inM?`onclick="openDetail(${wid},'${dk}')"`:'style="cursor:default"'}>
-      <div class="dnum" style="${isT?'color:#185FA5;font-weight:700':''}">${date.getDate()}</div>
-      ${inM&&s!=='OFF'?`<div class="mshift" style="background:${SBG[s]};color:${SFG[s]}">${SL[s]}${ot>0?` +${ot}h`:''}</div>`:''}
-      ${note&&inM?`<div style="font-size:9px;color:#185FA5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(note)}</div>`:''}
-    </div>`;
-  }
-  document.getElementById('mgrid').innerHTML=html;
-
-  let ore=0,ot=0,nti=0,fe=0;
-  for(let d=1;d<=last.getDate();d++){
-    const dk=key(new Date(y,m,d)),s=gS(wid,dk);
-    if(['G','N'].includes(s))ore+=8;
-    if(s==='N')nti++; if(s==='FE')fe++;
-    ot+=gO(wid,dk);
-  }
-  document.getElementById('msummary').innerHTML=`
-    <div class="scard"><div class="sl">Ore lavorate</div><div class="sv">${ore}h</div></div>
-    <div class="scard"><div class="sl">Straordinari</div><div class="sv" style="color:#BA7517">${ot}h</div></div>
-    <div class="scard"><div class="sl">Turni notte</div><div class="sv">${nti}</div></div>
-    <div class="scard"><div class="sl">Ferie</div><div class="sv">${fe}</div></div>`;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// MODAL DETTAGLIO — usa CLOSURE, zero ID globali condivisi
-// Ogni chiamata a openDetail crea un contesto completamente isolato.
-// Le funzioni msSetShift / msToggleOT / msSave sono ricreate ogni volta
-// come nuove funzioni con il loro proprio stato in chiusura.
-// ═══════════════════════════════════════════════════════════════════════════════
-function openDetail(wid, dk){
-  const w = workers.find(x=>x.id===wid);
-  if(!w) return;
-
-  // Stato locale di questo modal — non condiviso con nessun altro
-  const state = {
-    shift : gS(wid, dk),
-    ot    : gO(wid, dk),
-    note  : gN(wid, dk)
-  };
-
-  const dateStr = new Date(dk+'T12:00:00')
-    .toLocaleDateString('it-IT',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-
-  // Costruisce HTML bottoni turno
-  function shiftBtns(){
-    return SHIFTS.filter(s=>s!=='OFF').map(s=>
-      `<button class="spbtn${state.shift===s?' sel':''}"
-        style="background:${SBG[s]};color:${SFG[s]}"
-        data-s="${s}">${SL[s]}</button>`
-    ).join('')+
-    `<button class="spbtn${state.shift==='OFF'?' sel':''}"
-      style="background:#f0f0ee;color:#666" data-s="OFF">Non assegnato</button>`;
-  }
-
-  const root = document.getElementById('modal-root');
-
-  root.innerHTML=`
-  <div class="moverlay" id="moverlay">
-    <div class="mbox">
-      <h3>${h(w.name)}</h3>
-      <div class="msub">${dateStr}</div>
-
-      <span class="mlbl">Turno</span>
-      <div class="spicker" id="spicker">${shiftBtns()}</div>
-
-      <span class="mlbl">Commento</span>
-      <textarea class="mnote" placeholder="Es. sostituzione collega, lavoro urgente...">${h(state.note)}</textarea>
-
-      <div class="otrow">
-        <label class="otlbl">
-          <input type="checkbox" class="otchk" ${state.ot>0?'checked':''}> Straordinario
-        </label>
-        <div class="othours" style="${state.ot>0?'':'display:none'}">
-          <input type="number" class="otval" min="0.5" max="12" step="0.5" value="${state.ot||''}" placeholder="ore">
-          <span>ore</span>
+    <!-- PANE OFFERTA -->
+    <div class="pane" id="pane-offerta">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Voci totali</div>
+          <div class="stat-val" id="stat-voci">0</div>
+          <div class="stat-sub">in tutte le sezioni</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Totale IVA esclusa</div>
+          <div class="stat-val" id="stat-tot">€ 0</div>
+          <div class="stat-sub" id="stat-iva-lbl">IVA 22% = € 0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Totale IVA inclusa</div>
+          <div class="stat-val" id="stat-grand">€ 0</div>
+          <div class="stat-sub">importo finale</div>
         </div>
       </div>
 
-      <div class="mactions">
-        <button class="btn" id="mbtn-cancel">Annulla</button>
-        <button class="btn primary" id="mbtn-save">Salva</button>
+      <div id="sections-container"></div>
+
+      <button class="btn-add-section" onclick="addSection()">+ Aggiungi sezione principale</button>
+
+      <div class="totals-card">
+        <div class="totals-row">
+          <span class="totals-lbl">Totale IVA esclusa</span>
+          <span class="totals-val" id="tot-netto">€ 0,00</span>
+        </div>
+        <div class="totals-row">
+          <span class="totals-lbl" id="tot-iva-lbl">IVA 22%</span>
+          <span class="totals-val" id="tot-iva">€ 0,00</span>
+        </div>
+        <div class="totals-row totals-grand">
+          <span class="totals-lbl">Totale IVA inclusa</span>
+          <span class="totals-val" id="tot-grand">€ 0,00</span>
+        </div>
       </div>
+    </div>
+
+    <!-- PANE ANTEPRIMA -->
+    <div class="pane" id="pane-anteprima">
+      <div class="action-bar">
+        <button class="btn btn-primary" onclick="exportExcel()">⬇ Esporta Excel</button>
+        <button class="btn btn-secondary" onclick="window.print()">🖨 Stampa / PDF</button>
+      </div>
+      <div class="preview-doc" id="preview-doc"></div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const UMS = ['a corpo','m²','m³','ml','m','cad.','ton.','viaggio','h','gg','mese','a settimana','al giorno','Kg','litro','rotolo','mq.'];
+
+let uid = 1;
+const id = () => 'x' + (uid++);
+
+// ── STATE ──
+let state = {
+  sections: [
+    { id: id(), title: '1 - Start up intervento', open: true, subSections: [
+      { id: id(), title: '1.1 Oneri amministrativi', items: [
+        { id: id(), desc: 'Predisposizione P.O.S. Piano Operativo di Sicurezza e documentazione di cantiere', um: 'a corpo', qty: 1, price: 200 }
+      ]},
+      { id: id(), title: '1.2 Accantieramento', items: [
+        { id: id(), desc: "Preparazione materiali ed attrezzature necessari per l'esecuzione delle attività", um: 'a corpo', qty: 1, price: 150 },
+        { id: id(), desc: 'Trasferimento A/R personale ed attrezzature e oneri di trasferta', um: 'a corpo', qty: 1, price: 150 },
+        { id: id(), desc: 'Installazione e disinstallazione cantiere: approntamento aree di lavoro, delimitazioni, etc.', um: 'a corpo', qty: 1, price: 150 },
+      ]}
+    ]},
+    { id: id(), title: '2 - Fabbricato', open: true, subSections: [
+      { id: id(), title: '2.1 Bonifica civile', items: [
+        { id: id(), desc: 'Preparazione aree e copertura degli elementi sensibili', um: 'a corpo', qty: 1, price: 430 },
+        { id: id(), desc: 'Rimozione materiale bruciato e ammalorato predisposto in big bags', um: 'a corpo', qty: 1, price: 380 },
+        { id: id(), desc: 'Bonifica a secco tramite aspiratori triplo motore e filtri assoluti', um: 'm²', qty: 0, price: 1.8 },
+        { id: id(), desc: 'Bonifica manuale ad umido delle pareti e soffitti con detergente alcalino', um: 'm²', qty: 0, price: 5.5 },
+      ]},
+      { id: id(), title: '2.2 Bonifica del contenuto', items: [
+        { id: id(), desc: 'Bonifica a umido con prodotti specifici per tutto il contenuto (mobili) escluso i tessuti', um: 'a corpo', qty: 1, price: 2450 },
+      ]},
+      { id: id(), title: '2.3 Deodorizzazione e ozonizzazione', items: [
+        { id: id(), desc: 'Sanificazione finale tramite deodorizzazione ed ozonizzazione', um: 'a corpo', qty: 1, price: 250 },
+      ]}
+    ]},
+    { id: id(), title: '3 - Parti comuni / Scala', open: false, subSections: [
+      { id: id(), title: '3.1 Parti comuni', items: [
+        { id: id(), desc: 'Preparazione aree e copertura elementi sensibili, montaggio impalcatura', um: 'a corpo', qty: 1, price: 90 },
+        { id: id(), desc: 'Bonifica a secco e umido del soffitto ultimo piano', um: 'a corpo', qty: 1, price: 280 },
+        { id: id(), desc: 'Verniciatura soffitto con mano traspirante sana fumo', um: 'a corpo', qty: 1, price: 180 },
+      ]}
+    ]},
+    { id: id(), title: '4 - Rifiuti', open: false, subSections: [
+      { id: id(), title: '4.1 Analisi', items: [
+        { id: id(), desc: 'Analisi di caratterizzazione e classificazione rifiuti solidi', um: 'cad.', qty: 1, price: 350 },
+      ]},
+      { id: id(), title: '4.2 Smaltimento rifiuti', items: [
+        { id: id(), desc: 'Smaltimento rifiuto 17.09.04 (da quantificare a consuntivo tramite FIR)', um: 'ton.', qty: 1, price: 450 },
+        { id: id(), desc: 'Trasporto rifiuti', um: 'viaggio', qty: 1, price: 370 },
+      ]}
+    ]}
+  ]
+};
+
+// ── UTILS ──
+const fmt = n => '€ ' + (parseFloat(n)||0).toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const fmtN = n => (parseFloat(n)||0).toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const getIva = () => parseFloat(document.getElementById('f-iva')?.value) || 22;
+const secTotal = s => s.subSections.reduce((a,ss) => a + ss.items.reduce((b,it) => b + (parseFloat(it.qty)||0)*(parseFloat(it.price)||0), 0), 0);
+const grandTotal = () => state.sections.reduce((a,s) => a + secTotal(s), 0);
+const totalItems = () => state.sections.reduce((a,s) => a + s.subSections.reduce((b,ss) => b + ss.items.length, 0), 0);
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── NAVIGATION ──
+function showPane(name) {
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('pane-' + name).classList.add('active');
+  document.getElementById('nav-' + name)?.classList.add('active');
+  if (name === 'offerta') renderSections();
+  if (name === 'anteprima') renderPreview();
+  updateTotals();
+}
+
+// ── RENDER SECTIONS ──
+function renderSections() {
+  const container = document.getElementById('sections-container');
+  container.innerHTML = state.sections.map(sec => renderSection(sec)).join('');
+}
+
+function renderSection(sec) {
+  const tot = secTotal(sec);
+  return `<div class="section-wrap" id="sw-${sec.id}">
+    <div class="section-head ${sec.open ? '' : 'collapsed'}" onclick="toggleSec('${sec.id}')">
+      <span class="section-chevron">▼</span>
+      <input class="section-name-input" value="${esc(sec.title)}" placeholder="Nome sezione"
+        onclick="event.stopPropagation()"
+        onchange="setSec('${sec.id}','title',this.value)">
+      <span class="section-subtotal">${fmt(tot)}</span>
+      <button class="section-del" onclick="event.stopPropagation(); delSec('${sec.id}')" title="Elimina sezione">×</button>
+    </div>
+    ${sec.open ? `
+    <div class="section-body">
+      ${sec.subSections.map(ss => renderSubSec(sec.id, ss)).join('')}
+      <button class="btn-add-subsec" onclick="addSubSec('${sec.id}')">+ Aggiungi sottosezione</button>
+    </div>
+    <div class="subtotal-strip">
+      <span class="subtotal-label">Subtotale IVA esclusa</span>
+      <span class="subtotal-val">${fmt(tot)}</span>
+    </div>` : ''}
+  </div>`;
+}
+
+function renderSubSec(secId, ss) {
+  return `<div class="subsection" id="ss-${ss.id}">
+    <div class="subsection-head">
+      <input class="subsection-name-input" value="${esc(ss.title)}" placeholder="Nome sottosezione"
+        onchange="setSubSec('${secId}','${ss.id}','title',this.value)">
+      <button class="subsection-del" onclick="delSubSec('${secId}','${ss.id}')" title="Elimina">×</button>
+    </div>
+    <div class="items-table">
+      <div class="items-header">
+        <span class="col-hd">Descrizione</span>
+        <span class="col-hd" style="text-align:center">U.M.</span>
+        <span class="col-hd right">Quantità</span>
+        <span class="col-hd right">Costo unit.</span>
+        <span class="col-hd right">Totale</span>
+        <span></span>
+      </div>
+      ${ss.items.map(it => renderItem(secId, ss.id, it)).join('')}
+    </div>
+    <div class="items-footer">
+      <button class="btn-add-item" onclick="addItem('${secId}','${ss.id}')">+ Aggiungi voce</button>
+    </div>
+  </div>`;
+}
+
+function renderItem(secId, ssId, it) {
+  const tot = (parseFloat(it.qty)||0) * (parseFloat(it.price)||0);
+  return `<div class="item-row" id="ir-${it.id}">
+    <input class="inp-desc" value="${esc(it.desc)}" placeholder="Descrizione lavorazione"
+      onchange="setItem('${secId}','${ssId}','${it.id}','desc',this.value)">
+    <select class="inp-um" onchange="setItem('${secId}','${ssId}','${it.id}','um',this.value)">
+      ${UMS.map(u => `<option ${u===it.um?'selected':''}>${u}</option>`).join('')}
+    </select>
+    <input class="inp-num" type="number" step="0.01" value="${it.qty}"
+      onchange="setItem('${secId}','${ssId}','${it.id}','qty',this.value); updateRow(this,'${secId}','${ssId}','${it.id}')">
+    <input class="inp-num" type="number" step="0.01" value="${it.price}"
+      onchange="setItem('${secId}','${ssId}','${it.id}','price',this.value); updateRow(this,'${secId}','${ssId}','${it.id}')">
+    <span class="cell-total" id="ct-${it.id}">${fmtN(tot)}</span>
+    <button class="btn-del-row" onclick="delItem('${secId}','${ssId}','${it.id}')" title="Elimina voce">×</button>
+  </div>`;
+}
+
+// ── SECTION MUTATIONS ──
+function toggleSec(id) {
+  const s = state.sections.find(s => s.id === id);
+  if (s) { s.open = !s.open; renderSections(); updateTotals(); }
+}
+function setSec(id, key, val) {
+  const s = state.sections.find(s => s.id === id);
+  if (s) { s[key] = val; updateTotals(); }
+}
+function delSec(id) {
+  if (!confirm('Eliminare questa sezione?')) return;
+  state.sections = state.sections.filter(s => s.id !== id);
+  renderSections(); updateTotals();
+}
+function addSection() {
+  const n = state.sections.length + 1;
+  state.sections.push({ id: id(), title: n + ' - Nuova sezione', open: true, subSections: [
+    { id: id(), title: 'Sottosezione', items: [{ id: id(), desc: '', um: 'a corpo', qty: 1, price: 0 }] }
+  ]});
+  showPane('offerta');
+}
+function setSubSec(secId, ssId, key, val) {
+  const s = state.sections.find(s => s.id === secId);
+  const ss = s?.subSections.find(ss => ss.id === ssId);
+  if (ss) ss[key] = val;
+}
+function delSubSec(secId, ssId) {
+  const s = state.sections.find(s => s.id === secId);
+  if (!s) return;
+  s.subSections = s.subSections.filter(ss => ss.id !== ssId);
+  renderSections(); updateTotals();
+}
+function addSubSec(secId) {
+  const s = state.sections.find(s => s.id === secId);
+  if (!s) return;
+  s.subSections.push({ id: id(), title: 'Nuova sottosezione', items: [] });
+  renderSections();
+}
+function setItem(secId, ssId, itId, key, val) {
+  const s = state.sections.find(s => s.id === secId);
+  const ss = s?.subSections.find(ss => ss.id === ssId);
+  const it = ss?.items.find(i => i.id === itId);
+  if (it) { it[key] = val; updateTotals(); }
+}
+function updateRow(el, secId, ssId, itId) {
+  const s = state.sections.find(s => s.id === secId);
+  const ss = s?.subSections.find(ss => ss.id === ssId);
+  const it = ss?.items.find(i => i.id === itId);
+  if (!it) return;
+  const tot = (parseFloat(it.qty)||0) * (parseFloat(it.price)||0);
+  const cell = document.getElementById('ct-' + itId);
+  if (cell) cell.textContent = fmtN(tot);
+  // update section subtotal
+  const secTotal_ = secTotal(s);
+  document.querySelectorAll(`#sw-${secId} .section-subtotal`).forEach(el => el.textContent = fmt(secTotal_));
+  document.querySelectorAll(`#sw-${secId} .subtotal-val`).forEach(el => el.textContent = fmt(secTotal_));
+}
+function delItem(secId, ssId, itId) {
+  const s = state.sections.find(s => s.id === secId);
+  const ss = s?.subSections.find(ss => ss.id === ssId);
+  if (!ss) return;
+  ss.items = ss.items.filter(i => i.id !== itId);
+  renderSections(); updateTotals();
+}
+function addItem(secId, ssId) {
+  const s = state.sections.find(s => s.id === secId);
+  const ss = s?.subSections.find(ss => ss.id === ssId);
+  if (!ss) return;
+  ss.items.push({ id: id(), desc: '', um: 'a corpo', qty: 1, price: 0 });
+  renderSections();
+}
+
+// ── TOTALS ──
+function updateTotals() {
+  const netto = grandTotal();
+  const iva = getIva();
+  const ivaAmt = netto * iva / 100;
+  const grand = netto + ivaAmt;
+  const nitems = totalItems();
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('tot-netto', fmt(netto));
+  set('tot-iva', fmt(ivaAmt));
+  set('tot-iva-lbl', `IVA ${iva}%`);
+  set('tot-grand', fmt(grand));
+  set('sidebar-total', fmt(netto));
+  set('sidebar-total-iva', fmt(grand));
+  set('badge-voci', nitems);
+  set('stat-voci', nitems);
+  set('stat-tot', fmt(netto));
+  set('stat-grand', fmt(grand));
+  set('stat-iva-lbl', `IVA ${iva}% = ${fmt(ivaAmt)}`);
+}
+
+function updateAll() { updateTotals(); }
+
+// ── PREVIEW ──
+function renderPreview() {
+  const nome = document.getElementById('f-nome')?.value || '';
+  const ind  = document.getElementById('f-indirizzo')?.value || '';
+  const num  = document.getElementById('f-numero')?.value || '';
+  const data = document.getElementById('f-data')?.value || '';
+  const val  = document.getElementById('f-validita')?.value || '30';
+  const note = document.getElementById('f-note')?.value || '';
+  const iva  = getIva();
+  const netto = grandTotal();
+  const ivaAmt = netto * iva / 100;
+  const grand = netto + ivaAmt;
+
+  const dataFmt = data ? new Date(data).toLocaleDateString('it-IT') : '—';
+
+  let html = `<div class="prev-header">
+    <div>
+      <div class="prev-company">${esc(nome) || 'Cliente'}</div>
+      <div style="font-size:12px; color:var(--text2); margin-top:4px;">${esc(ind)}</div>
+    </div>
+    <div class="prev-meta">
+      <p>Offerta n. <strong>${esc(num)||'___'}</strong></p>
+      <p>Data: <strong>${dataFmt}</strong></p>
+      <p>Validità: <strong>${val} giorni</strong></p>
+      <p>IVA applicata: <strong>${iva}%</strong></p>
     </div>
   </div>`;
 
-  // Riferimenti DOM — tutti locali a questa closure, NON id globali
-  const overlay  = root.querySelector('#moverlay');
-  const picker   = root.querySelector('#spicker');
-  const noteEl   = root.querySelector('.mnote');
-  const otChk    = root.querySelector('.otchk');
-  const otWrap   = root.querySelector('.othours');
-  const otValEl  = root.querySelector('.otval');
+  if (nome || ind) {
+    html += `<div class="prev-client">
+      <div class="prev-client-lbl">Destinatario</div>
+      <p>${esc(nome)}</p>
+      ${ind ? `<p style="color:var(--text2)">${esc(ind)}</p>` : ''}
+    </div>`;
+  }
 
-  // Click bottoni turno
-  picker.addEventListener('click', e=>{
-    const btn = e.target.closest('.spbtn');
-    if(!btn) return;
-    state.shift = btn.dataset.s;
-    picker.querySelectorAll('.spbtn').forEach(b=>b.classList.toggle('sel', b===btn));
-  });
+  html += `<table class="prev-table">
+    <thead><tr>
+      <th style="width:60px">Item</th>
+      <th>Descrizione</th>
+      <th style="width:70px">U.M.</th>
+      <th class="right" style="width:70px">Q.tà</th>
+      <th class="right" style="width:90px">Costo unit.</th>
+      <th class="right" style="width:100px">Costo totale</th>
+    </tr></thead><tbody>`;
 
-  // Aggiorna note in stato
-  noteEl.addEventListener('input', ()=>{ state.note = noteEl.value; });
-
-  // Toggle straordinario
-  otChk.addEventListener('change', ()=>{
-    otWrap.style.display = otChk.checked ? '' : 'none';
-    if(!otChk.checked){ state.ot=0; otValEl.value=''; }
-  });
-  otValEl.addEventListener('input', ()=>{ state.ot = parseFloat(otValEl.value)||0; });
-
-  // Chiudi cliccando overlay
-  overlay.addEventListener('click', e=>{ if(e.target===overlay) closeModal(); });
-
-  // Annulla
-  root.querySelector('#mbtn-cancel').addEventListener('click', closeModal);
-
-  // Salva — legge tutto dallo stato locale
-  root.querySelector('#mbtn-save').addEventListener('click', ()=>{
-    state.note = noteEl.value.trim();
-    state.ot   = otChk.checked ? (parseFloat(otValEl.value)||0) : 0;
-    sS(wid, dk, state.shift);
-    sO(wid, dk, state.ot);
-    sN(wid, dk, state.note);
-    closeModal();
-    toast('Salvato!');
-    view==='week' ? render() : renderMonth();
-  });
-}
-
-function closeModal(){ document.getElementById('modal-root').innerHTML=''; }
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// GESTIONE OPERAI
-// ═══════════════════════════════════════════════════════════════════════════════
-function openManageWorkers(){
-  if(!workers.length){ toast('Nessun operaio presente'); return; }
-  const root=document.getElementById('modal-root');
-  root.innerHTML=`
-  <div class="moverlay" id="moverlay">
-    <div class="mbox" style="max-width:460px">
-      <h3>Gestisci operai</h3>
-      <div style="margin-top:4px;margin-bottom:10px">
-        <input type="text" id="wsearch" placeholder="&#128269; Cerca operaio..."
-          style="width:100%;padding:6px 10px;font-size:12px;border-radius:8px;border:1px solid #ccc;outline:none">
-      </div>
-      <div style="display:flex;flex-direction:column;gap:5px;max-height:55vh;overflow-y:auto" id="wlist">
-        ${workers.map(w=>`
-        <div class="wrow" data-name="${h(w.name).toLowerCase()}"
-          style="display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid #eee;border-radius:8px">
-          <div style="flex:1;min-width:0">
-            <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h(w.name)}</div>
-            <div style="font-size:11px;color:#888;margin-top:1px">${w.role?h(w.role):'<span style="color:#bbb;font-style:italic">nessun ruolo</span>'} &middot; ${tbadge(w)}</div>
-          </div>
-          <button class="btn sm" style="white-space:nowrap" data-eid="${w.id}">&#9998; Modifica</button>
-          <button class="btn danger sm" style="white-space:nowrap" data-rid="${w.id}">&#x2715;</button>
-        </div>`).join('')}
-      </div>
-      <div class="mactions"><button class="btn" id="mbtn-cancel">Chiudi</button></div>
-    </div>
-  </div>`;
-
-  const overlay=root.querySelector('#moverlay');
-  overlay.addEventListener('click',e=>{ if(e.target===overlay)closeModal(); });
-  root.querySelector('#mbtn-cancel').addEventListener('click',closeModal);
-
-  // Ricerca live
-  root.querySelector('#wsearch').addEventListener('input',function(){
-    const q=this.value.toLowerCase();
-    root.querySelectorAll('.wrow').forEach(row=>{
-      row.style.display=row.dataset.name.includes(q)?'':'none';
-    });
-  });
-
-  // Rimuovi
-  root.querySelectorAll('[data-rid]').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const id=parseInt(btn.dataset.rid);
-      if(!confirm('Rimuovere questo operaio dal planning?'))return;
-      workers=workers.filter(w=>w.id!==id);
-      delete sched[id]; delete otime[id]; delete nots[id];
-      persist(); closeModal(); toast('Operaio rimosso');
-      view==='week'?render():renderMonth();
-    });
-  });
-
-  // Modifica
-  root.querySelectorAll('[data-eid]').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      openEditWorker(parseInt(btn.dataset.eid));
-    });
-  });
-}
-
-function openEditWorker(id){
-  const w=workers.find(x=>x.id===id);
-  if(!w) return;
-  const root=document.getElementById('modal-root');
-  root.innerHTML=`
-  <div class="moverlay" id="moverlay">
-    <div class="mbox">
-      <h3>Modifica operaio</h3>
-      <span class="mlbl">Nome e cognome</span>
-      <input type="text" id="en" value="${h(w.name)}" placeholder="Nome e cognome">
-      <span class="mlbl">Qualifica / Ruolo</span>
-      <input type="text" id="er" value="${h(w.role)}" placeholder="Es. Elettricista">
-      <span class="mlbl">Tipo</span>
-      <select id="et">
-        <option value="Tecnico/Operaio" ${w.tipo==='Tecnico/Operaio'?'selected':''}>Tecnico/Operaio</option>
-        <option value="Capo Cantiere"   ${w.tipo==='Capo Cantiere'  ?'selected':''}>Capo Cantiere</option>
-      </select>
-      <div class="mactions">
-        <button class="btn" id="mbtn-back">&#8592; Indietro</button>
-        <button class="btn primary" id="mbtn-save">Salva modifiche</button>
-      </div>
-    </div>
-  </div>`;
-
-  const overlay=root.querySelector('#moverlay');
-  overlay.addEventListener('click',e=>{ if(e.target===overlay)closeModal(); });
-  root.querySelector('#mbtn-back').addEventListener('click', openManageWorkers);
-  root.querySelector('#mbtn-save').addEventListener('click',()=>{
-    const name=root.querySelector('#en').value.trim();
-    const role=root.querySelector('#er').value.trim();
-    const tipo=root.querySelector('#et').value;
-    if(!name){ alert("Il nome non può essere vuoto"); return; }
-    w.name=name; w.role=role; w.tipo=tipo;
-    persist(); toast('Modifiche salvate!');
-    openManageWorkers();
-    view==='week'?render():renderMonth();
-  });
-}
-
-function openAddWorker(){
-  const root=document.getElementById('modal-root');
-  root.innerHTML=`
-  <div class="moverlay" id="moverlay">
-    <div class="mbox">
-      <h3>Aggiungi operaio</h3>
-      <span class="mlbl">Nome e cognome</span>
-      <input type="text" id="an" placeholder="Es. Mario Rossi" autofocus>
-      <span class="mlbl">Qualifica / Ruolo</span>
-      <input type="text" id="ar" placeholder="Es. Elettricista">
-      <span class="mlbl">Tipo</span>
-      <select id="at">
-        <option value="Tecnico/Operaio">Tecnico/Operaio</option>
-        <option value="Capo Cantiere">Capo Cantiere</option>
-      </select>
-      <div class="mactions">
-        <button class="btn" id="mbtn-cancel">Annulla</button>
-        <button class="btn primary" id="mbtn-save">Aggiungi</button>
-      </div>
-    </div>
-  </div>`;
-
-  const overlay=root.querySelector('#moverlay');
-  overlay.addEventListener('click',e=>{ if(e.target===overlay)closeModal(); });
-  root.querySelector('#mbtn-cancel').addEventListener('click',closeModal);
-  root.querySelector('#mbtn-save').addEventListener('click',()=>{
-    const name=document.getElementById('an').value.trim();
-    const role=document.getElementById('ar').value.trim();
-    const tipo=document.getElementById('at').value;
-    if(!name){ alert("Inserisci il nome dell'operaio"); return; }
-    workers.push({id:++nid, name, role:role||'Generico', tipo});
-    persist(); closeModal(); toast('Operaio aggiunto!');
-    view==='week'?render():renderMonth();
-  });
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ESPORTA CSV
-// ═══════════════════════════════════════════════════════════════════════════════
-function exportCSV(){
-  try{
-    // Usa PUNTO E VIRGOLA come separatore — standard per Excel italiano
-    // Ogni campo tra virgolette per gestire testi con virgole o accenti
-    const q = v => '"' + String(v === null || v === undefined ? '' : v).replace(/"/g, '""') + '"';
-    const SEP = ';';
-
-    // ── Struttura: una riga per ogni coppia (operaio × giorno) ────────────────
-    // Colonne fisse e sempre nello stesso ordine:
-    // Data | Giorno | Operaio | Ruolo | Tipo | Turno | Straordinario | Commento
-
-    const header = [
-      'Data',
-      'Giorno',
-      'Operaio',
-      'Ruolo',
-      'Tipo',
-      'Turno',
-      'Straordinario',
-      'Commento'
-    ];
-
-    const rows = [];
-
-    if(view === 'week'){
-      // Vista settimana: 7 giorni × N operai
-      const days = [];
-      for(let i = 0; i < 7; i++) days.push(addD(wkStart, i));
-
-      days.forEach(d => {
-        const dk      = key(d);
-        const dataStr = fmt(d);
-        const giornoStr = DIT[dw(d)];
-
-        workers.forEach(w => {
-          const wk   = String(w.id);
-          const s    = (sched[wk] && sched[wk][dk]) || 'OFF';
-          const ot   = (otime[wk] && otime[wk][dk]) || 0;
-          const nota = (nots[wk]  && nots[wk][dk])  || '';
-
-          rows.push([
-            dataStr,                            // Data (es. 27/04)
-            giornoStr,                          // Giorno (es. Lun)
-            w.name,                             // Operaio (nome e cognome)
-            w.role || '',                       // Ruolo (qualifica)
-            w.tipo || 'Tecnico/Operaio',        // Tipo (Capo Cantiere / Tecnico/Operaio)
-            SL[s] || 'Non assegnato',           // Turno (Giornata / Notte / Riposo / Ferie / Non assegnato)
-            ot > 0 ? ot + 'h' : '',            // Straordinario (es. 2h, vuoto se non presente)
-            nota                                // Commento (testo libero, vuoto se non presente)
-          ]);
-        });
+  let itemCounter = 0;
+  state.sections.forEach(sec => {
+    const tot = secTotal(sec);
+    html += `<tr class="sec-row"><td colspan="5">${esc(sec.title)}</td><td class="right">${fmt(tot)}</td></tr>`;
+    sec.subSections.forEach((ss, ssi) => {
+      html += `<tr class="subsec-row"><td></td><td colspan="5" class="indent">${esc(ss.title)}</td></tr>`;
+      ss.items.forEach((it, ii) => {
+        itemCounter++;
+        const ltot = (parseFloat(it.qty)||0)*(parseFloat(it.price)||0);
+        html += `<tr class="item-row">
+          <td style="color:var(--text3); font-family:'DM Mono',monospace; font-size:11px; padding-left:20px;">${ssi+1}.${ii+1}</td>
+          <td>${esc(it.desc)}</td>
+          <td style="text-align:center; color:var(--text2);">${it.um}</td>
+          <td class="right">${it.qty}</td>
+          <td class="right">€ ${fmtN(parseFloat(it.price)||0)}</td>
+          <td class="right">€ ${fmtN(ltot)}</td>
+        </tr>`;
       });
+    });
+    html += `<tr class="subtot-row"><td colspan="5" style="text-align:right; font-size:11px; text-transform:uppercase; letter-spacing:0.04em;">Subtotale IVA esclusa</td><td class="right">${fmt(tot)}</td></tr>`;
+  });
 
-    } else {
-      // Vista mese: tutti i giorni del mese × N operai
-      const {y, m} = curMon;
-      const last = new Date(y, m + 1, 0).getDate();
+  html += `</tbody></table>
+  <div class="prev-totals">
+    <div class="prev-tot-row"><span>Totale IVA esclusa</span><span>${fmt(netto)}</span></div>
+    <div class="prev-tot-row"><span>IVA ${iva}%</span><span>${fmt(ivaAmt)}</span></div>
+    <div class="prev-tot-row"><span>Totale IVA inclusa</span><span>${fmt(grand)}</span></div>
+  </div>`;
 
-      for(let d = 1; d <= last; d++){
-        const date      = new Date(y, m, d);
-        const dk        = key(date);
-        const dataStr   = fmt(date);
-        const giornoStr = DIT[dw(date)];
+  if (note) html += `<div class="prev-note"><strong style="font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text3);">Note</strong><br><br>${esc(note)}</div>`;
 
-        workers.forEach(w => {
-          const wk   = String(w.id);
-          const s    = (sched[wk] && sched[wk][dk]) || 'OFF';
-          const ot   = (otime[wk] && otime[wk][dk]) || 0;
-          const nota = (nots[wk]  && nots[wk][dk])  || '';
-
-          rows.push([
-            dataStr,
-            giornoStr,
-            w.name,
-            w.role || '',
-            w.tipo || 'Tecnico/Operaio',
-            SL[s] || 'Non assegnato',
-            ot > 0 ? ot + 'h' : '',
-            nota
-          ]);
-        });
-      }
-    }
-
-    // Serializza con punto e virgola (Excel italiano)
-    const csv = [header, ...rows].map(r => r.map(q).join(SEP)).join('\r\n');
-    const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8'});
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url;
-    const periodo = view === 'week'
-      ? fmt(wkStart).replace('/','_') + '-' + fmt(addD(wkStart,6)).replace('/','_')
-      : MIT[curMon.m] + '_' + curMon.y;
-    a.download = 'planning_' + periodo + '.csv';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 800);
-    toast('CSV esportato!');
-  } catch(e){ toast('Errore: ' + e.message); }
+  document.getElementById('preview-doc').innerHTML = html;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// AVVIO
-// ═══════════════════════════════════════════════════════════════════════════════
-render();
+// ── EXPORT EXCEL ──
+function exportExcel() {
+  if (typeof XLSX === 'undefined') { showToast('❌ SheetJS non caricato. Connetti internet.'); return; }
+
+  const nome  = document.getElementById('f-nome')?.value || '';
+  const ind   = document.getElementById('f-indirizzo')?.value || '';
+  const num   = document.getElementById('f-numero')?.value || '';
+  const data  = document.getElementById('f-data')?.value || '';
+  const val   = document.getElementById('f-validita')?.value || '30';
+  const iva   = getIva();
+  const netto = grandTotal();
+  const ivaAmt = netto * iva / 100;
+  const grand = netto + ivaAmt;
+
+  const wb = XLSX.utils.book_new();
+  const ws_data = [];
+
+  ws_data.push(['PREVENTIVO DI OFFERTA', '', '', '', '', '']);
+  ws_data.push([`Data: ${data}`, '', '', `N° Offerta: ${num}`, '', '']);
+  ws_data.push([`Cliente: ${nome}`, '', '', `Indirizzo: ${ind}`, '', '']);
+  ws_data.push(['Validità:', val + ' giorni', '', `IVA: ${iva}%`, '', '']);
+  ws_data.push(['']);
+  ws_data.push(['ITEM', 'DESCRIZIONE', 'U.M.', 'STIMA Q.TÀ', 'COSTO UNITARIO', 'COSTO TOTALE']);
+
+  state.sections.forEach(sec => {
+    ws_data.push([sec.title, '', '', '', '', '']);
+    sec.subSections.forEach((ss, ssi) => {
+      ws_data.push(['', ss.title, '', '', '', '']);
+      ss.items.forEach((it, ii) => {
+        const ltot = (parseFloat(it.qty)||0)*(parseFloat(it.price)||0);
+        ws_data.push([`${ssi+1}.${ii+1}`, it.desc, it.um, parseFloat(it.qty)||0, parseFloat(it.price)||0, ltot]);
+      });
+    });
+    ws_data.push(['', 'SUBTOTALE IVA ESCLUSA', '', '', '', secTotal(sec)]);
+    ws_data.push(['']);
+  });
+
+  ws_data.push(['', 'TOTALE IVA ESCLUSA', '', '', '', netto]);
+  ws_data.push(['', `IVA ${iva}%`, '', '', '', ivaAmt]);
+  ws_data.push(['', 'TOTALE IVA INCLUSA', '', '', '', grand]);
+
+  const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+  ws['!cols'] = [
+    { wch: 10 }, { wch: 55 }, { wch: 10 }, { wch: 12 }, { wch: 14 }, { wch: 14 }
+  ];
+
+  XLSX.utils.book_append_sheet(wb, ws, 'OFFERTA');
+
+  const fname = `Preventivo_${nome.replace(/\s+/g,'_')||'offerta'}_${data||new Date().toISOString().slice(0,10)}.xlsx`;
+  XLSX.writeFile(wb, fname);
+  showToast('✅ File Excel scaricato!');
+}
+
+// ── HELPERS ──
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function newDoc() {
+  if (!confirm('Creare un nuovo documento? I dati attuali andranno persi.')) return;
+  document.getElementById('f-nome').value = '';
+  document.getElementById('f-indirizzo').value = '';
+  document.getElementById('f-numero').value = '';
+  document.getElementById('f-data').value = '';
+  document.getElementById('f-validita').value = '30';
+  document.getElementById('f-iva').value = '22';
+  document.getElementById('f-note').value = '';
+  state.sections = [];
+  renderSections();
+  updateTotals();
+  showPane('cliente');
+  showToast('Nuovo documento creato');
+}
+
+// ── INIT ──
+document.getElementById('f-data').value = new Date().toISOString().slice(0, 10);
+renderSections();
+updateTotals();
 </script>
 </body>
 </html>
